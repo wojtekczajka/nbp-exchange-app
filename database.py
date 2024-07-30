@@ -1,4 +1,4 @@
-from sqlalchemy import create_engine, Column, String, Float, Date, MetaData
+from sqlalchemy import create_engine, Column, String, Float, Date, UniqueConstraint
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
@@ -16,11 +16,11 @@ class CurrencyBase(Base):
 
 class CurrencyAB(CurrencyBase):
     __tablename__ = "currencies_ab"
-    mid = Column(Float, nullable=True)
+    mid = Column(Float, nullable=False)
 
 class CurrencyC(CurrencyBase):
     __tablename__ = "currencies_c"
-    bid = Column(Float, nullable=True)
-    ask = Column(Float, nullable=True)
+    bid = Column(Float, nullable=False)
+    ask = Column(Float, nullable=False)
 
 Base.metadata.create_all(bind=engine)

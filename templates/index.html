@@ -6,6 +6,9 @@
     <title>Kursy Walut NBP</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
         .info-box-content {
             display: none;
         }
@@ -20,6 +23,31 @@
                 }
             }
             infoElement.style.display = (infoElement.style.display === 'block') ? 'none' : 'block';
+        }
+
+        function updateCurrencyDropdown(table) {
+            const currencySelect = document.getElementById('currency');
+            currencySelect.innerHTML = '';
+
+            let currencies = [];
+            if (table === 'A') {
+                currencies = {{ currencies_a|tojson }};
+            } else if (table === 'B') {
+                currencies = {{ currencies_b|tojson }};
+            } else if (table === 'C') {
+                currencies = {{ currencies_c|tojson }};
+            }
+
+            currencies.forEach(currency => {
+                const option = document.createElement('option');
+                option.value = currency.code;
+                option.textContent = currency.name;
+                currencySelect.appendChild(option);
+            });
+        }
+
+        window.onload = function() {
+            updateCurrencyDropdown('A');  // Set default table to A on page load
         }
     </script>
 </head>
@@ -55,14 +83,16 @@
             <h3 class="text-lg font-bold mb-4">Sprawdź kurs walut</h3>
             <form action="/check-currency" method="get">
                 <label for="table" class="block text-sm font-medium text-gray-700">Tabela:</label>
-                <select id="table" name="table" class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
+                <select id="table" name="table" class="mt-1 block w-full p-2 border border-gray-300 rounded-md" onchange="updateCurrencyDropdown(this.value)">
                     <option value="A">Tabela A</option>
                     <option value="B">Tabela B</option>
                     <option value="C">Tabela C</option>
                 </select>
                 <br><br>
                 <label for="currency" class="block text-sm font-medium text-gray-700">Waluta:</label>
-                <input type="text" id="currency" name="currency" required class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
+                <select id="currency" name="currency" class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
+                    <!-- This will be populated dynamically -->
+                </select>
                 <br><br>
                 <label for="date" class="block text-sm font-medium text-gray-700">Data:</label>
                 <input type="date" id="date" name="date" required class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
