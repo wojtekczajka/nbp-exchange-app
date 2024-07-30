@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kursy Walut NBP</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        .info-box-content {
+            display: none;
+        }
+    </style>
+    <script>
+        function toggleInfo(table) {
+            let infoElement = document.getElementById('info-' + table);
+            let allInfoElements = document.getElementsByClassName('info-box-content');
+            for (let element of allInfoElements) {
+                if (element !== infoElement) {
+                    element.style.display = 'none';
+                }
+            }
+            infoElement.style.display = (infoElement.style.display === 'block') ? 'none' : 'block';
+        }
+    </script>
+</head>
+<body class="bg-gray-100 font-sans">
+    <header class="bg-blue-600 text-white text-center py-4">
+        <h1 class="text-2xl">Kursy Walut NBP</h1>
+    </header>
+    <div class="container mx-auto mt-10">
+        <div class="flex justify-center space-x-4">
+            <button class="info-box bg-blue-500 text-white py-2 px-4 rounded" onclick="toggleInfo('A')">Tabela A</button>
+            <button class="info-box bg-green-500 text-white py-2 px-4 rounded" onclick="toggleInfo('B')">Tabela B</button>
+            <button class="info-box bg-yellow-500 text-white py-2 px-4 rounded" onclick="toggleInfo('C')">Tabela C</button>
+            <button class="info-box bg-red-500 text-white py-2 px-4 rounded" onclick="toggleInfo('NBP')">Informacje o kursach NBP</button>
+        </div>
+        
+        <div id="info-A" class="info-box-content bg-white p-4 mt-4 shadow rounded">
+            <p>Tabela A zawiera wartości 34 najpopularniejszych walut włącznie z polskim złotym, dane aktualizowane są codziennie, zazwyczaj około godziny 16.</p>
+        </div>
+        
+        <div id="info-B" class="info-box-content bg-white p-4 mt-4 shadow rounded">
+            <p>Tabela B zawiera nieco rzadziej spotykane waluty, dane aktualizowane są raz w tygodniu – w środę pomiędzy godziną 11:45 a 12:15.</p>
+        </div>
+        
+        <div id="info-C" class="info-box-content bg-white p-4 mt-4 shadow rounded">
+            <p>Tabela C to archiwum, zawiera zaległe notowania kursów walut zagranicznych, wykorzystywane do statystyk i monitorowania rynku walut.</p>
+        </div>
+        
+        <div id="info-NBP" class="info-box-content bg-white p-4 mt-4 shadow rounded">
+            <p>Kurs NBP nie nadaje się do śledzenia aktualnej sytuacji na rynku i najnowszych zmian, ponieważ dane aktualizowane są tylko raz dziennie, jednak jest on wykorzystywany do przygotowywania wykresów i analiz długoterminowych oraz sporządzania statystyk. Oprócz tego kursy NBP są wykorzystywane podczas niektórych czynności prawnych wymagających rzetelnych i dokładnych statystyk - przykładem może być choćby określanie wartości zobowiązań cywilnoprawnych, obliczanie różnic kursowych, przeliczanie przychodów bądź kosztów, a także obliczanie wartości aktywów w obcych walutach.</p>
+        </div>
+        
+        <div class="form-box bg-white p-6 mt-10 shadow rounded w-full max-w-lg mx-auto">
+            <h3 class="text-lg font-bold mb-4">Sprawdź kurs walut</h3>
+            <form action="/check-currency" method="get">
+                <label for="table" class="block text-sm font-medium text-gray-700">Tabela:</label>
+                <select id="table" name="table" class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
+                    <option value="A">Tabela A</option>
+                    <option value="B">Tabela B</option>
+                    <option value="C">Tabela C</option>
+                </select>
+                <br><br>
+                <label for="currency" class="block text-sm font-medium text-gray-700">Waluta:</label>
+                <input type="text" id="currency" name="currency" required class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
+                <br><br>
+                <label for="date" class="block text-sm font-medium text-gray-700">Data:</label>
+                <input type="date" id="date" name="date" required class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
+                <br><br>
+                <button type="submit" class="bg-blue-500 text-white py-2 px-4 rounded">Sprawdź</button>
+            </form>
+        </div>
+    </div>
+    <footer class="bg-blue-600 text-white text-center py-4 mt-10">
+        &copy; 2024 Kursy Walut NBP
+    </footer>
+</body>
+</html>
