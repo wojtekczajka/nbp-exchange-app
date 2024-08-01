@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kursy Walut NBP</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -12,8 +13,30 @@
         .info-box-content {
             display: none;
         }
+        .highlight {
+            background-color: #ffd700;
+        }
     </style>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
     <script>
+        let dateRanges = {};
+        let availableDates = [];
+
+        async function fetchDateRanges(table) {
+            const response = await fetch(`/date-ranges/${table}`);
+            const data = await response.json();
+            dateRanges[table] = data;
+            updateDateRange(table);
+        }
+
+        async function fetchAvailableDates(table, year, month) {
+            const response = await fetch(`/available-dates/${table}/${year}/${month}`);
+            const data = await response.json();
+            availableDates = data;
+            highlightDatesWithRecords();
+        }
+
         function toggleInfo(table) {
             let infoElement = document.getElementById('info-' + table);
             let allInfoElements = document.getElementsByClassName('info-box-content');
@@ -43,6 +66,37 @@
                 option.value = currency.code;
                 option.textContent = currency.name;
                 currencySelect.appendChild(option);
+            });
+
+            fetchDateRanges(table);
+        }
+
+        function updateDateRange(table) {
+            const dateInput = document.getElementById('date');
+            const range = dateRanges[table];
+            dateInput.min = range.min;
+            dateInput.max = range.max;
+
+            dateInput.value = range.min;
+
+            highlightDatesWithRecords();
+        }
+
+        function highlightDatesWithRecords() {
+            $("#date").datepicker({
+                beforeShowDay: function(date) {
+                    const dateString = $.datepicker.formatDate('yy-mm-dd', date);
+                    if (availableDates.includes(dateString)) {
+                        return [true, 'highlight', 'Record exists'];
+                    } else {
+                        return [true, '', ''];
+                    }
+                },
+                onChangeMonthYear: function(year, month) {
+                    const table = document.getElementById('table').value;
+                    fetchAvailableDates(table, year, month);
+                },
+                dateFormat: 'yy-mm-dd'
             });
         }
 
