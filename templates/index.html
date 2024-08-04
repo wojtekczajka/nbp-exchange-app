@@ -1,12 +1,471 @@
-{% extends "base.html" %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Kursy Walut NBP{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@1.2.2"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        .highlight {
+            background-color: #ffd700 !important;
+        }
+        .info-box-content {
+            display: none;
+            box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        .active {
+            border: 2px solid #000;
+        }
+        .slider-label {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+        }
+    </style>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+</head>
+<body class="bg-gray-100 font-sans">
+    <header class="bg-blue-600 text-white text-center py-4">
+        <h1 class="text-2xl">Kursy Walut NBP</h1>
+    </header>
+    <div class="container mx-auto mt-10 max-w-5xl">
+        {% block content %}{% endblock %}
+    </div>
+    {% block scripts %}{% endblock %}
+</body>
+</html>
+<div class="form-box bg-white p-6 mt-6 shadow-lg rounded w-full max-w-5xl mx-auto">
+    <h3 class="text-lg font-bold mb-4">Sprawdź kurs walut</h3>
+    <div class="flex justify-center space-x-4 mb-4">
+        <button class="table-btn bg-blue-500 text-white py-2 px-4 rounded" data-table="A">Tabela A</button>
+        <button class="table-btn bg-green-500 text-white py-2 px-4 rounded" data-table="B">Tabela B</button>
+        <button class="table-btn bg-yellow-500 text-white py-2 px-4 rounded" data-table="C">Tabela C</button>
+    </div>
+    
+    <div id="info-A" class="info-box-content bg-white p-4 mt-4 shadow rounded">
+        <p>Tabela A zawiera wartości 34 najpopularniejszych walut włącznie z polskim złotym, dane aktualizowane są codziennie, zazwyczaj około godziny 16.</p>
+    </div>
+    
+    <div id="info-B" class="info-box-content bg-white p-4 mt-4 shadow rounded">
+        <p>Tabela B zawiera nieco rzadziej spotykane waluty, dane aktualizowane są raz w tygodniu – w środę pomiędzy godziną 11:45 a 12:15.</p>
+    </div>
+    
+    <div id="info-C" class="info-box-content bg-white p-4 mt-4 shadow rounded">
+        <p>Tabela C to archiwum, zawiera zaległe notowania kursów walut zagranicznych, wykorzystywane do statystyk i monitorowania rynku walut.</p>
+    </div>
 
-{% block content %}
-    {% include "form.html" %}
-    {% include "currency_rate_result.html" %}
-    {% include "plot.html" %}
-    {% include "nbp_info.html" %}
+    <div class="mb-4">
+        <label for="currency" class="block text-sm font-medium text-gray-700">Waluta:</label>
+        <select id="currency" name="currency" class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
+            <!-- This will be populated dynamically -->
+        </select>
+    </div>
+    <div class="mb-4">
+        <label for="date" class="block text-sm font-medium text-gray-700">Data:</label>
+        <input type="text" id="date" name="date" required class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
+    </div>
+    <div class="mb-4">
+        <div class="block text-sm font-medium text-gray-700 mb-2">Zakres dat:</div>
+        <label class="inline-flex items-center">
+            <input type="radio" name="dateRange" value="1m" class="form-radio" checked>
+            <span class="ml-2">1 miesiąc</span>
+        </label>
+        <label class="inline-flex items-center ml-6">
+            <input type="radio" name="dateRange" value="3m" class="form-radio">
+            <span class="ml-2">3 miesiące</span>
+        </label>
+        <label class="inline-flex items-center ml-6">
+            <input type="radio" name="dateRange" value="1y" class="form-radio">
+            <span class="ml-2">1 rok</span>
+        </label>
+    </div>
+    <div id="currencyRateResult" class="currency-rate-result-box bg-white p-6 mt-6 shadow-lg rounded w-full max-w-5xl mx-auto">
+        <h3 class="text-lg font-bold mb-4 text-center">Wynik Kursu Walut</h3>
+        <div id="rateInfo" class="text-lg font-medium text-gray-700 mb-4 p-4 border rounded bg-gray-100 text-center"></div>
+    </div>
+    <div class="plot-box bg-white p-6 mt-6 shadow-lg rounded w-full max-w-5xl mx-auto">
+        <canvas id="myChart" width="800" height="400"></canvas>
+    </div>
+    <!-- <div class="mb-4">
+        <label for="date-slider" class="block text-sm font-medium text-gray-700">Wybierz zakres dat:</label>
+        <div id="date-slider"></div>
+        <div class="slider-label">
+            <span id="date-start-label"></span>
+            <span id="date-end-label"></span>
+        </div>
+    </div>
+    <div class="flex justify-center">
+        <button id="download-csv" class="bg-blue-500 text-white py-2 px-4 rounded">Pobierz CSV</button>
+    </div> -->
+</div>
+<div class="form-box bg-white p-6 mt-6 shadow-lg rounded w-full max-w-5xl mx-auto">
+    <div class="mb-4">
+        <label for="date-slider" class="block text-sm font-medium text-gray-700">Wybierz zakres dat:</label>
+        <div id="date-slider"></div>
+        <div class="slider-label">
+            <span id="date-start-label"></span>
+            <span id="date-end-label"></span>
+        </div>
+    </div>
+    <div class="flex justify-center">
+        <button id="download-csv" class="bg-blue-500 text-white py-2 px-4 rounded">Pobierz CSV</button>
+    </div>
+</div>
+<div id="info-NBP" class="form-box bg-white p-6 mt-6 shadow-lg rounded w-full max-w-5xl mx-auto">
+    <p>Kurs NBP nie nadaje się do śledzenia aktualnej sytuacji na rynku i najnowszych zmian, ponieważ dane aktualizowane są tylko raz dziennie, jednak jest on wykorzystywany do przygotowywania wykresów i analiz długoterminowych oraz sporządzania statystyk. Oprócz tego kursy NBP są wykorzystywane podczas niektórych czynności prawnych wymagających rzetelnych i dokładnych statystyk - przykładem może być choćby określanie wartości zobowiązań cywilnoprawnych, obliczanie różnic kursowych, przeliczanie przychodów bądź kosztów, a także obliczanie wartości aktywów w obcych walutach.</p>
+</div>
+{% block footer %}
+<footer class="bg-blue-600 text-white text-center py-4 mt-10">
+    &copy; 2024 Kursy Walut NBP
+</footer>
 {% endblock %}
+<script>
+    let dateRanges = {};
+    let availableDates = [];
+    let chart;
 
-{% block scripts %}
-    {% include "scripts.html" %}
-{% endblock %}
+    async function fetchData(url) {
+        const response = await fetch(url);
+        return response.json();
+    }
+
+    async function fetchDateRanges(table) {
+        const data = await fetchData(`/date-ranges/${table}`);
+        dateRanges[table] = data;
+        updateDateRange(table);
+        updateDateSlider(table, data.min, data.max);
+    }
+
+    async function fetchAvailableDates(table, year, month, currency) {
+        const data = await fetchData(`/available-dates/${table}/${year}/${month}?currency=${currency}`);
+        availableDates = data;
+        highlightDatesWithRecords();
+    }
+
+    async function fetchPlotData(table, currency, startDate, endDate) {
+        const data = await fetchData(`/check-currency-range?table=${table}&currency=${currency}&start_date=${startDate}&end_date=${endDate}`);
+        updatePlot(data, table, currency, startDate, endDate);
+    }
+
+    async function fetchCurrencyValue(table, currency, date) {
+        try {
+            const data = await fetchData(`/check-currency?table=${table}&currency=${currency}&date=${date}`);
+            const rateInfoElement = document.getElementById('rateInfo');
+            rateInfoElement.innerHTML = `Data: ${data.date}, Kurs: ${data.value.mid || data.value.bid + ' / ' + data.value.ask}`;
+        } catch (error) {
+            document.getElementById('rateInfo').innerText = "Brak danych dla podanej waluty lub daty.";
+        }
+    }
+
+    function updateCurrencyDropdown(table) {
+        const currencySelect = document.getElementById('currency');
+        currencySelect.innerHTML = '';
+
+        let currencies = [];
+        if (table === 'A') {
+            currencies = {{ currencies_a|tojson }};
+        } else if (table === 'B') {
+            currencies = {{ currencies_b|tojson }};
+        } else if (table === 'C') {
+            currencies = {{ currencies_c|tojson }};
+        }
+
+        currencies.forEach(currency => {
+            const option = document.createElement('option');
+            option.value = currency.code;
+            option.textContent = currency.name;
+            currencySelect.appendChild(option);
+        });
+
+        fetchDateRanges(table);
+    }
+
+    function updateDateRange(table) {
+        const dateInput = document.getElementById('date');
+        const range = dateRanges[table];
+        const today = new Date();
+
+        dateInput.min = range.min;
+        dateInput.max = range.max;
+
+        const defaultDate = new Date(range.max);
+        if (defaultDate > today) {
+            dateInput.value = today.toISOString().split('T')[0];
+        } else {
+            dateInput.value = range.max;
+        }
+
+        $("#date").datepicker("option", "minDate", new Date(range.min));
+        $("#date").datepicker("option", "maxDate", new Date(range.max));
+
+        // Trigger initial fetch of available dates for the default month and year
+        const year = new Date(dateInput.value).getFullYear();
+        const month = new Date(dateInput.value).getMonth() + 1;
+        const currency = document.getElementById('currency').value;
+        fetchAvailableDates(table, year, month, currency);
+        const { startDate, endDate } = getDateRangeValues();
+        fetchPlotData(table, currency, startDate, endDate);
+        fetchCurrencyValue(table, currency, dateInput.value);
+    }
+
+    function updateDateSlider(table, minDate, maxDate) {
+        const minDateObj = new Date(minDate);
+        const maxDateObj = new Date(maxDate);
+
+        $("#date-slider").slider({
+            range: true,
+            min: minDateObj.getTime(),
+            max: maxDateObj.getTime(),
+            values: [minDateObj.getTime(), maxDateObj.getTime()],
+            slide: function(event, ui) {
+                $("#date-start-label").text(new Date(ui.values[0]).toISOString().split('T')[0]);
+                $("#date-end-label").text(new Date(ui.values[1]).toISOString().split('T')[0]);
+            },
+            change: function(event, ui) {
+                const startDate = new Date(ui.values[0]).toISOString().split('T')[0];
+                const endDate = new Date(ui.values[1]).toISOString().split('T')[0];
+                const table = document.querySelector('.table-btn.active').getAttribute('data-table');
+                const currency = document.getElementById('currency').value;
+                fetchPlotData(table, currency, startDate, endDate);
+            }
+        });
+
+        $("#date-start-label").text(minDate);
+        $("#date-end-label").text(maxDate);
+    }
+
+    function highlightDatesWithRecords() {
+        $("#date").datepicker("refresh");
+    }
+
+    function autoTypeDate(year, month) {
+        const dateInput = document.getElementById('date');
+        const firstAvailableDate = availableDates.find(date => date.startsWith(`${year}-${String(month).padStart(2, '0')}`));
+        if (firstAvailableDate) {
+            dateInput.value = firstAvailableDate;
+        }
+    }
+
+    function getDateRangeValues() {
+        const date = new Date(document.getElementById('date').value);
+        let startDate, endDate;
+        const rangeValue = document.querySelector('input[name="dateRange"]:checked').value;
+        if (rangeValue === '1m') {
+            startDate = new Date(date);
+            endDate = new Date(date);
+            startDate.setMonth(startDate.getMonth() - 1);
+            endDate.setMonth(endDate.getMonth() + 1);
+        } else if (rangeValue === '3m') {
+            startDate = new Date(date);
+            endDate = new Date(date);
+            startDate.setMonth(startDate.getMonth() - 1.5);
+            endDate.setMonth(endDate.getMonth() + 1.5);
+        } else if (rangeValue === '1y') {
+            startDate = new Date(date);
+            endDate = new Date(date);
+            startDate.setFullYear(startDate.getFullYear() - 1);
+            endDate.setFullYear(endDate.getFullYear() + 1);
+        }
+        return {
+            startDate: startDate.toISOString().split('T')[0],
+            endDate: endDate.toISOString().split('T')[0]
+        };
+    }
+
+    function updatePlot(data, table, currency, startDate, endDate) {
+        const labels = data.map(entry => entry.date);
+        let datasets = [];
+
+        if (table === 'C') {
+            const bidValues = data.map(entry => entry.value.bid);
+            const askValues = data.map(entry => entry.value.ask);
+
+            datasets = [
+                {
+                    label: 'Kurs kupna',
+                    data: bidValues,
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    borderWidth: 1
+                },
+                {
+                    label: 'Kurs sprzedaży',
+                    data: askValues,
+                    borderColor: 'rgba(192, 75, 75, 1)',
+                    backgroundColor: 'rgba(192, 75, 75, 0.2)',
+                    borderWidth: 1
+                }
+            ];
+        } else {
+            const values = data.map(entry => entry.value.mid);
+            datasets = [
+                {
+                    label: 'Kurs Walut',
+                    data: values,
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    borderWidth: 1
+                }
+            ];
+        }
+
+        // Add marker for the currency date or nearest date
+        const dateInput = document.getElementById('date').value;
+        const nearestDate = data.find(entry => entry.date === dateInput);
+
+        if (chart) {
+            chart.destroy();
+        }
+
+        const ctx = document.getElementById('myChart').getContext('2d');
+        chart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: datasets
+            },
+            options: {
+                scales: {
+                    x: {
+                        type: 'time',
+                        time: {
+                            unit: 'day',
+                            tooltipFormat: 'dd MMM yyyy'
+                        }
+                    },
+                    y: {
+                        beginAtZero: false
+                    }
+                },
+                plugins: {
+                    annotation: {
+                        annotations: nearestDate ? [{
+                            type: 'polygon',
+                            backgroundColor: 'rgba(255, 99, 132, 0.25)',
+                            borderColor: 'rgba(255, 99, 132, 1)',
+                            borderWidth: 2,
+                            radius: 10,
+                            sides: 6,
+                            xValue: nearestDate.date,
+                            yValue: nearestDate.value.mid || nearestDate.value.bid,
+                            label: {
+                                content: 'Nearest Date',
+                                enabled: true,
+                                position: 'center'
+                            }
+                        }, ...(table === 'C' ? [{
+                            type: 'polygon',
+                            backgroundColor: 'rgba(99, 255, 132, 0.25)',
+                            borderColor: 'rgba(99, 255, 132, 1)',
+                            borderWidth: 2,
+                            radius: 10,
+                            sides: 6,
+                            xValue: nearestDate.date,
+                            yValue: nearestDate.value.ask,
+                            label: {
+                                content: 'Nearest Date Ask',
+                                enabled: true,
+                                position: 'center'
+                            }
+                        }] : [])] : []
+                    }
+                }
+            }
+        });
+    }
+
+    function toggleInfo(table) {
+        let infoElement = document.getElementById('info-' + table);
+        let allInfoElements = document.getElementsByClassName('info-box-content');
+        for (let element of allInfoElements) {
+            if (element !== infoElement) {
+                element.style.display = 'none';
+            }
+        }
+        infoElement.style.display = 'block';
+    }
+
+    $(document).ready(function() {
+        $("#date").datepicker({
+            dateFormat: 'yy-mm-dd',
+            beforeShowDay: function(date) {
+                const dateString = $.datepicker.formatDate('yy-mm-dd', date);
+                if (availableDates.includes(dateString)) {
+                    return [true, 'highlight', 'Record exists'];
+                } else {
+                    return [true, '', ''];
+                }
+            },
+            onChangeMonthYear: function(year, month) {
+                const table = document.querySelector('.table-btn.active').getAttribute('data-table');
+                const currency = document.getElementById('currency').value;
+                fetchAvailableDates(table, year, month, currency);
+            }
+        });
+
+        $('#currency').on('change', function() {
+            const date = $('#date').val();
+            const year = new Date(date).getFullYear();
+            const month = new Date(date).getMonth() + 1;
+            const table = document.querySelector('.table-btn.active').getAttribute('data-table');
+            const currency = document.getElementById('currency').value;
+            fetchAvailableDates(table, year, month, currency).then(() => autoTypeDate(year, month));
+            const { startDate, endDate } = getDateRangeValues();
+            fetchPlotData(table, currency, startDate, endDate);
+            fetchCurrencyValue(table, currency, date);
+        });
+
+        $('#date').on('change', function() {
+            const date = $(this).val();
+            const year = new Date(date).getFullYear();
+            const month = new Date(date).getMonth() + 1;
+            const table = document.querySelector('.table-btn.active').getAttribute('data-table');
+            const currency = document.getElementById('currency').value;
+            fetchAvailableDates(table, year, month, currency);
+            fetchCurrencyValue(table, currency, date);
+            const { startDate, endDate } = getDateRangeValues();
+            fetchPlotData(table, currency, startDate, endDate);
+        });
+
+        $('.table-btn').on('click', function() {
+            $('.table-btn').removeClass('active');
+            $(this).addClass('active');
+            const table = $(this).attr('data-table');
+            updateCurrencyDropdown(table);
+            const date = $('#date').val();
+            const currency = document.getElementById('currency').value;
+            const { startDate, endDate } = getDateRangeValues();
+            fetchPlotData(table, currency, startDate, endDate);
+            toggleInfo(table);
+        });
+
+        $('input[name="dateRange"]').on('change', function() {
+            const table = document.querySelector('.table-btn.active').getAttribute('data-table');
+            const currency = document.getElementById('currency').value;
+            const { startDate, endDate } = getDateRangeValues();
+            fetchPlotData(table, currency, startDate, endDate);
+        });
+
+        // Handle CSV download
+        $('#download-csv').on('click', function() {
+            const table = document.querySelector('.table-btn.active').getAttribute('data-table');
+            const currency = document.getElementById('currency').value;
+            const startDate = $("#date-start-label").text();
+            const endDate = $("#date-end-label").text();
+            window.location.href = `/download-csv?table=${table}&currency=${currency}&start_date=${startDate}&end_date=${endDate}`;
+        });
+
+        // Set default table to A on page load
+        updateCurrencyDropdown('A');
+        document.querySelector('.table-btn[data-table="A"]').classList.add('active');
+        toggleInfo('A');
+    });
+</script>
