@@ -1,10 +1,12 @@
-from fastapi import FastAPI, Request, Depends
-from fastapi.responses import HTMLResponse
+import csv
+from fastapi import FastAPI, Request, Depends, HTTPException
+from fastapi.responses import HTMLResponse, StreamingResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 from datetime import datetime
 from database import SessionLocal
 from crud import get_distinct_currencies, get_date_range, get_currency_rate, get_available_dates, get_plot_data
+from io import StringIO
 
 app = FastAPI()
 
@@ -75,3 +77,25 @@ async def check_currency_range(table: str, currency: str, start_date: str, end_d
         return [{"date": str(record[0]), "value": {"mid": record[1]}} for record in data]
     elif table == 'C':
         return [{"date": str(record[0]), "value": {"bid": record[1], "ask": record[2]}} for record in data]
+
+@app.get("/download-csv")
+async def download_csv(table: str, currency: str, start_date: str, end_date: str, db: Session = Depends(get_db)):
+    start_date_obj = datetime.strptime(start_date, "%Y-%m-%d").date()
+    end_date_obj = datetime.strptime(end_date, "%Y-%m-%d").date()
+    data = get_plot_data(db, table, currency, start_date_obj, end_date_obj)
+    
+    output = StringIO()
+    writer = csv.writer(output)
+    writer.writerow(['Date', 'Value'])
+    
+    if table in ['A', 'B']:
+        for record in data:
+            writer.writerow([record[0], record[1]])
+    elif table == 'C':
+        writer.writerow(['Date', 'Bid', 'Ask'])
+        for record in data:
+            writer.writerow([record[0], record[1], record[2]])
+    
+    output.seek(0)
+    
+    return StreamingResponse(output, media_type='text/csv', headers={"Content-Disposition": f"attachment; filename={currency}_{table}_{start_date}_to_{end_date}.csv"})
