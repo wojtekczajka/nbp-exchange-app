@@ -82,6 +82,9 @@
                     <span class="ml-2">1 rok</span>
                 </label>
             </div>
+            <div class="flex justify-center mb-4">
+                <button id="check-currency" class="bg-blue-500 text-white py-2 px-4 rounded">Sprawdź</button>
+            </div>
             <div id="currencyRateResult" class="currency-rate-result-box bg-white p-6 mt-6 shadow-lg rounded w-full max-w-5xl mx-auto">
                 <h3 class="text-lg font-bold mb-4 text-center">Wynik Kursu Walut</h3>
                 <div id="rateInfo" class="text-lg font-medium text-gray-700 mb-4 p-4 border rounded bg-gray-100 text-center"></div>
@@ -221,9 +224,6 @@
             const month = new Date(dateInput.value).getMonth() + 1;
             const currency = document.getElementById('currency').value;
             fetchAvailableDates(table, year, month, currency);
-            const { startDate, endDate } = getDateRangeValues('currency');
-            fetchPlotData(table, currency, startDate, endDate, 'currencyPlot');
-            fetchCurrencyValue(table, currency, dateInput.value);
         }
 
         function updateDateSlider(table, minDate, maxDate) {
@@ -426,9 +426,6 @@
                 const table = document.getElementById('table-select').value;
                 const currency = document.getElementById('currency').value;
                 fetchAvailableDates(table, year, month, currency).then(() => autoTypeDate(year, month));
-                const { startDate, endDate } = getDateRangeValues('currency');
-                fetchPlotData(table, currency, startDate, endDate, 'currencyPlot');
-                fetchCurrencyValue(table, currency, date);
             });
 
             $('#date').on('change', function() {
@@ -438,6 +435,12 @@
                 const table = document.getElementById('table-select').value;
                 const currency = document.getElementById('currency').value;
                 fetchAvailableDates(table, year, month, currency);
+            });
+
+            $('#check-currency').on('click', function() {
+                const table = document.getElementById('table-select').value;
+                const currency = document.getElementById('currency').value;
+                const date = document.getElementById('date').value;
                 fetchCurrencyValue(table, currency, date);
                 const { startDate, endDate } = getDateRangeValues('currency');
                 fetchPlotData(table, currency, startDate, endDate, 'currencyPlot');
@@ -455,8 +458,7 @@
                 updateCurrencyDropdown(table, 'currency');
                 const date = $('#date').val();
                 const currency = document.getElementById('currency').value;
-                const { startDate, endDate } = getDateRangeValues('currency');
-                fetchPlotData(table, currency, startDate, endDate, 'currencyPlot');
+                fetchAvailableDates(table, new Date(date).getFullYear(), new Date(date).getMonth() + 1, currency);
             });
 
             $('#table-select-download').on('change', function() {
