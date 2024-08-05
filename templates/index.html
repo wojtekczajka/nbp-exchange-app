@@ -126,6 +126,10 @@
                 <canvas id="downloadPlot" width="800" height="400"></canvas>
             </div>
         </div>
+        <div id="info-NBP" class="form-box bg-white p-6 mt-6 shadow-lg rounded w-full max-w-5xl mx-auto">
+            <h3 class="text-lg font-bold mb-4">Informacja o kursie NBP</h3>
+            <p>Kurs NBP nie nadaje się do śledzenia aktualnej sytuacji na rynku i najnowszych zmian, ponieważ dane aktualizowane są tylko raz dziennie, jednak jest on wykorzystywany do przygotowywania wykresów i analiz długoterminowych oraz sporządzania statystyk. Oprócz tego kursy NBP są wykorzystywane podczas niektórych czynności prawnych wymagających rzetelnych i dokładnych statystyk - przykładem może być choćby określanie wartości zobowiązań cywilnoprawnych, obliczanie różnic kursowych, przeliczanie przychodów bądź kosztów, a także obliczanie wartości aktywów w obcych walutach.</p>
+        </div>
     </div>
 
     {% block footer %}
@@ -488,6 +492,8 @@
             updateCurrencyDropdown('A', 'currency-download');
             document.querySelector('.table-btn[data-table="A"]').classList.add('active');
             toggleInfo('A');
+            
+            
             
         });
     </script>
