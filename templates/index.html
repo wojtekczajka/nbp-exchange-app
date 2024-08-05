@@ -37,6 +37,7 @@
     </header>
     <div class="container mx-auto mt-10 max-w-5xl">
         <div class="form-box bg-white p-6 mt-6 shadow-lg rounded w-full">
+            <h3 class="text-lg font-bold mb-4">Informacje o tabelach kursów NBP</h3>
             <div class="flex justify-center space-x-4 mb-4">
                 <button class="table-btn bg-blue-500 text-white py-2 px-4 rounded" data-table="A">Tabela A</button>
                 <button class="table-btn bg-green-500 text-white py-2 px-4 rounded" data-table="B">Tabela B</button>
@@ -88,9 +89,9 @@
             <div id="currencyRateResult" class="currency-rate-result-box bg-white p-6 mt-6 shadow-lg rounded w-full max-w-5xl mx-auto">
                 <h3 class="text-lg font-bold mb-4 text-center">Wynik Kursu Walut</h3>
                 <div id="rateInfo" class="text-lg font-medium text-gray-700 mb-4 p-4 border rounded bg-gray-100 text-center"></div>
-                <div class="plot-box bg-white p-6 mt-6 shadow-lg rounded w-full">
-                    <canvas id="currencyPlot" width="800" height="400"></canvas>
-                </div>
+            </div>
+            <div class="plot-box bg-white p-6 mt-6 shadow-lg rounded w-full">
+                <canvas id="currencyPlot" width="800" height="400"></canvas>
             </div>
         </div>
 
@@ -487,6 +488,7 @@
             updateCurrencyDropdown('A', 'currency-download');
             document.querySelector('.table-btn[data-table="A"]').classList.add('active');
             toggleInfo('A');
+            
         });
     </script>
 </body>
