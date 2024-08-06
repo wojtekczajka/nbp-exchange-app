@@ -30,15 +30,15 @@ This application fetches and displays exchange rates from the National Bank of P
 ### Local Setup
 
 1. Clone the repository:
-   \`\`\`bash
+   ```bash
    git clone https://github.com/wojtekczajka/nbp-exchange-app.git
    cd nbp-exchange-app
-   \`\`\`
+   ```
 
 2. Build and run the Docker containers:
-   \`\`\`bash
+   ```bash
    docker-compose up --build
-   \`\`\`
+   ```
 
 3. The app will be available at \`http://localhost:8000\`.
    
