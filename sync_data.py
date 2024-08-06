@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 from sqlalchemy.exc import IntegrityError
 from crud import get_date_range, get_distinct_currencies
 
+
 def sync_currency_data():
     db = SessionLocal()
 
@@ -12,13 +13,14 @@ def sync_currency_data():
     for table in tables:
         currencies = get_distinct_currencies(db, table)
         for currency in currencies:
-            currency_code = currency[0]  # Assuming currency is a tuple like (currency_code,)
+            currency_code = currency[0]
             min_date, max_date = get_date_range(db, table, currency_code)
-            current_date = max_date + timedelta(days=1) if max_date else datetime(2002, 1, 1).date()
-            
+            current_date = max_date + \
+                timedelta(days=1) if max_date else datetime(2002, 1, 1).date()
+
             end_date = datetime.now().date()
-            delta = timedelta(days=30)  # Fetch data in 30-day increments
-            
+            delta = timedelta(days=30)
+
             while current_date < end_date:
                 next_date = current_date + delta
                 if next_date > end_date:
@@ -30,8 +32,9 @@ def sync_currency_data():
                     data = response.json()
                     for entry in data['rates']:
                         effective_date = entry['effectiveDate']
-                        effective_date = datetime.strptime(effective_date, "%Y-%m-%d").date()
-                        
+                        effective_date = datetime.strptime(
+                            effective_date, "%Y-%m-%d").date()
+
                         if table in ['A', 'B']:
                             currency_entry = CurrencyAB(
                                 table=table,
@@ -53,10 +56,11 @@ def sync_currency_data():
                     db.commit()
                 except IntegrityError:
                     db.rollback()
-                
+
                 current_date = next_date
-    
+
     db.close()
+
 
 if __name__ == "__main__":
     sync_currency_data()
