@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -158,8 +158,15 @@
                     <label for="date" class="block text-sm font-medium text-gray-700" data-translate="dateLabel">Data:</label>
                     <input type="text" id="date" name="date" required class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
                 </div>
+                <div class="flex justify-center mb-4">
+                    <button id="check-currency" class="bg-blue-500 text-white py-2 px-4 rounded" data-translate="checkButton">Sprawdź</button>
+                </div>
+                <div id="currencyRateResult" class="currency-rate-result-box bg-white p-6 mt-6 shadow-lg rounded w-full max-w-5xl mx-auto">
+                    <h3 class="text-lg font-bold mb-4 text-center" data-translate="resultHeader">Wynik Kursu Walut</h3>
+                    <div id="rateInfo" class="text-lg font-medium text-gray-700 mb-4 p-4 border rounded bg-gray-100 text-center"></div>
+                </div>
                 <div class="mb-4">
-                    <div class="block text-sm font-medium text-gray-700 mb-2" data-translate="dateRangeLabel">Zakres dat:</div>
+                    <div class="block text-sm font-medium text-gray-700 mb-2" data-translate="dateRangeLabel">Okres na wykresie:</div>
                     <label class="inline-flex items-center">
                         <input type="radio" name="dateRange" value="1m" class="form-radio" checked>
                         <span class="ml-2" data-translate="oneMonth">1 miesiąc</span>
@@ -172,13 +179,6 @@
                         <input type="radio" name="dateRange" value="1y" class="form-radio">
                         <span class="ml-2" data-translate="oneYear">1 rok</span>
                     </label>
-                </div>
-                <div class="flex justify-center mb-4">
-                    <button id="check-currency" class="bg-blue-500 text-white py-2 px-4 rounded" data-translate="checkButton">Sprawdź</button>
-                </div>
-                <div id="currencyRateResult" class="currency-rate-result-box bg-white p-6 mt-6 shadow-lg rounded w-full max-w-5xl mx-auto">
-                    <h3 class="text-lg font-bold mb-4 text-center" data-translate="resultHeader">Wynik Kursu Walut</h3>
-                    <div id="rateInfo" class="text-lg font-medium text-gray-700 mb-4 p-4 border rounded bg-gray-100 text-center"></div>
                 </div>
                 <div class="plot-box bg-white p-6 mt-6 shadow-lg rounded w-full">
                     <canvas id="currencyPlot" width="800" height="400"></canvas>
@@ -243,12 +243,12 @@
         let dateRanges = {};
         let availableDates = [];
         let currencyChart, downloadChart;
-
+    
         async function fetchData(url) {
             const response = await fetch(url);
             return response.json();
         }
-
+    
         async function fetchDateRanges(table, currency, context) {
             const data = await fetchData(`/date-ranges/${table}/${currency}`);
             dateRanges[table] = data;
@@ -258,49 +258,104 @@
                 updateDateSlider(table, data.min, data.max);
             }
         }
-
+    
         async function fetchAvailableDates(table, year, month, currency) {
             const data = await fetchData(`/available-dates/${table}/${year}/${month}/${currency}`);
             availableDates = data;
             highlightDatesWithRecords();
         }
-
+    
         async function fetchPlotData(table, currency, startDate, endDate, chartRef) {
             const data = await fetchData(`/check-currency-range/${table}/${currency}?start_date=${startDate}&end_date=${endDate}`);
             updatePlot(data, table, currency, startDate, endDate, chartRef);
         }
-
+    
         async function fetchCurrencyValue(table, currency, date) {
             try {
                 const data = await fetchData(`/check-currency/${table}/${currency}?date=${date}`);
                 const rateInfoElement = document.getElementById('rateInfo');
-                
+                const language = document.documentElement.lang;
+                const translations = {
+                    "pl": {
+                        "table": "Tabela",
+                        "currency": "Waluta",
+                        "date": "Data",
+                        "mid": "Kurs",
+                        "bid": "Kurs kupna",
+                        "ask": "Kurs sprzedaży",
+                        "noData": "Brak danych dla podanej waluty lub daty.",
+                        "nearestResult": "Najbliższy znaleziony wynik to:"
+                    },
+                    "en": {
+                        "table": "Table",
+                        "currency": "Currency",
+                        "date": "Date",
+                        "mid": "Rate",
+                        "bid": "Bid rate",
+                        "ask": "Ask rate",
+                        "noData": "No data for the given currency or date.",
+                        "nearestResult": "Nearest found result is:"
+                    }
+                };
+    
                 if (table === 'C') {
-                    rateInfoElement.innerHTML = `Tabela: ${table}<br>Waluta: ${currency}<br>Data: ${data.date}<br>Kurs kupna: ${data.value.bid}<br>Kurs sprzedaży: ${data.value.ask}`;
+                    rateInfoElement.innerHTML = `${translations[language].table}: ${table}<br>${translations[language].currency}: ${currency}<br>${translations[language].date}: ${data.date}<br>${translations[language].bid}: ${data.value.bid}<br>${translations[language].ask}: ${data.value.ask}`;
                 } else {
-                    rateInfoElement.innerHTML = `Tabela: ${table}<br>Waluta: ${currency}<br>Data: ${data.date}<br>Kurs: ${data.value.mid}`;
+                    rateInfoElement.innerHTML = `${translations[language].table}: ${table}<br>${translations[language].currency}: ${currency}<br>${translations[language].date}: ${data.date}<br>${translations[language].mid}: ${data.value.mid}`;
                 }
             } catch (error) {
                 try {
                     const nearestData = await fetchData(`/nearest-currency/${table}/${currency}?date=${date}`);
                     const rateInfoElement = document.getElementById('rateInfo');
-                    
+                    const language = document.documentElement.lang;
+                    const translations = {
+                        "pl": {
+                            "table": "Tabela",
+                            "currency": "Waluta",
+                            "date": "Data",
+                            "mid": "Kurs",
+                            "bid": "Kurs kupna",
+                            "ask": "Kurs sprzedaży",
+                            "noData": "Brak danych dla podanej waluty lub daty.",
+                            "nearestResult": "Najbliższy znaleziony wynik to:"
+                        },
+                        "en": {
+                            "table": "Table",
+                            "currency": "Currency",
+                            "date": "Date",
+                            "mid": "Rate",
+                            "bid": "Bid rate",
+                            "ask": "Ask rate",
+                            "noData": "No data for the given currency or date.",
+                            "nearestResult": "Nearest found result is:"
+                        }
+                    };
+    
                     if (table === 'C') {
-                        rateInfoElement.innerHTML = `Brak danych dla podanej waluty lub daty.<br>Najbliższy znaleziony wynik to:<br> Tabela: ${table}<br>Waluta: ${currency}<br>Data: ${nearestData.date}<br>Kurs kupna: ${nearestData.value.bid}<br>Kurs sprzedaży: ${nearestData.value.ask}`;
+                        rateInfoElement.innerHTML = `${translations[language].noData}<br>${translations[language].nearestResult}<br>${translations[language].table}: ${table}<br>${translations[language].currency}: ${currency}<br>${translations[language].date}: ${nearestData.date}<br>${translations[language].bid}: ${nearestData.value.bid}<br>${translations[language].ask}: ${nearestData.value.ask}`;
                     } else {
-                        rateInfoElement.innerHTML = `Brak danych dla podanej waluty lub daty.<br>Najbliższy znaleziony wynik to:<br> Tabela: ${table}<br>Waluta: ${currency}<br>Data: ${nearestData.date}<br>Kurs: ${nearestData.value.mid}`;
+                        rateInfoElement.innerHTML = `${translations[language].noData}<br>${translations[language].nearestResult}<br>${translations[language].table}: ${table}<br>${translations[language].currency}: ${currency}<br>${translations[language].date}: ${nearestData.date}<br>${translations[language].mid}: ${nearestData.value.mid}`;
                     }
                 } catch (nearestError) {
-                    document.getElementById('rateInfo').innerText = "Brak danych dla podanej waluty lub daty.";
+                    const rateInfoElement = document.getElementById('rateInfo');
+                    const language = document.documentElement.lang;
+                    const translations = {
+                        "pl": {
+                            "noData": "Brak danych dla podanej waluty lub daty."
+                        },
+                        "en": {
+                            "noData": "No data for the given currency or date."
+                        }
+                    };
+                    rateInfoElement.innerText = translations[language].noData;
                 }
             }
         }
-
-
+    
         function updateCurrencyDropdown(table, selectId) {
             const currencySelect = document.getElementById(selectId);
             currencySelect.innerHTML = '';
-
+    
             let currencies = [];
             if (table === 'A') {
                 currencies = {{ currencies_a|tojson }};
@@ -309,46 +364,46 @@
             } else if (table === 'C') {
                 currencies = {{ currencies_c|tojson }};
             }
-
+    
             currencies.forEach(currency => {
                 const option = document.createElement('option');
                 option.value = currency.code;
                 option.textContent = currency.name;
                 currencySelect.appendChild(option);
             });
-
+    
             if (selectId === 'currency') {
                 fetchDateRanges(table, document.getElementById('currency').value,'currency');
             } else {
                 fetchDateRanges(table, document.getElementById('currency-download').value,'download');
             }
         }
-
+    
         function updateDateRange(table, context) {
             const dateInput = document.getElementById('date');
             const range = dateRanges[table];
             const today = new Date();
-
+    
             dateInput.min = range.min;
             dateInput.max = range.max;
-
+    
             const defaultDate = new Date(range.max);
             if (defaultDate > today) {
                 dateInput.value = today.toISOString().split('T')[0];
             } else {
                 dateInput.value = range.max;
             }
-
+    
             $("#date").datepicker("option", "minDate", new Date(range.min));
             $("#date").datepicker("option", "maxDate", new Date(range.max));
-
+    
             // Trigger initial fetch of available dates for the default month and year
             const year = new Date(dateInput.value).getFullYear();
             const month = new Date(dateInput.value).getMonth() + 1;
             const currency = document.getElementById('currency').value;
             fetchAvailableDates(table, year, month, currency);
         }
-
+    
         function updateDateSlider(table, minDate, maxDate) {
             const minDateObj = new Date(minDate);
             const maxDateObj = new Date(maxDate);
@@ -374,11 +429,11 @@
             $("#date-start-label").text(minDate);
             $("#date-end-label").text(maxDate);
         }
-
+    
         function highlightDatesWithRecords() {
             $("#date").datepicker("refresh");
         }
-
+    
         function autoTypeDate(year, month) {
             const dateInput = document.getElementById('date');
             const firstAvailableDate = availableDates.find(date => date.startsWith(`${year}-${String(month).padStart(2, '0')}`));
@@ -386,46 +441,51 @@
                 dateInput.value = firstAvailableDate;
             }
         }
-
+    
         function getDateRangeValues(context) {
-            const date = new Date(document.getElementById('date').value);
-            let startDate, endDate;
-            if (context === 'currency') {
-                const rangeValue = document.querySelector('input[name="dateRange"]:checked').value;
-                if (rangeValue === '1m') {
-                    startDate = new Date(date);
-                    endDate = new Date(date);
-                    startDate.setMonth(startDate.getMonth() - 1);
-                    endDate.setMonth(endDate.getMonth() + 1);
-                } else if (rangeValue === '3m') {
-                    startDate = new Date(date);
-                    endDate = new Date(date);
-                    startDate.setMonth(startDate.getMonth() - 1.5);
-                    endDate.setMonth(endDate.getMonth() + 1.5);
-                } else if (rangeValue === '1y') {
-                    startDate = new Date(date);
-                    endDate = new Date(date);
-                    startDate.setFullYear(startDate.getFullYear() - 1);
-                    endDate.setFullYear(endDate.getFullYear() + 1);
-                }
-            } else {
-                startDate = new Date($("#date-slider").slider("values", 0));
-                endDate = new Date($("#date-slider").slider("values", 1));
-            }
-            return {
-                startDate: startDate.toISOString().split('T')[0],
-                endDate: endDate.toISOString().split('T')[0]
-            };
-        }
+    const date = new Date(document.getElementById('date').value);
+    let startDate, endDate;
 
+    if (context === 'currency') {
+        const rangeValue = document.querySelector('input[name="dateRange"]:checked').value;
+        if (rangeValue === '1m') {
+            // Set start and end dates to 1 month (30 days) period centered around the selected date
+            startDate = new Date(date);
+            startDate.setDate(startDate.getDate() - 15);
+            endDate = new Date(date);
+            endDate.setDate(endDate.getDate() + 15);
+        } else if (rangeValue === '3m') {
+            // Set start and end dates to 3 months (90 days) period centered around the selected date
+            startDate = new Date(date);
+            startDate.setDate(startDate.getDate() - 45);
+            endDate = new Date(date);
+            endDate.setDate(endDate.getDate() + 45);
+        } else if (rangeValue === '1y') {
+            // Set start and end dates to 1 year period centered around the selected date
+            startDate = new Date(date);
+            startDate.setFullYear(startDate.getFullYear() - 0.5);
+            endDate = new Date(date);
+            endDate.setFullYear(endDate.getFullYear() + 0.5);
+        }
+    } else {
+        startDate = new Date($("#date-slider").slider("values", 0));
+        endDate = new Date($("#date-slider").slider("values", 1));
+    }
+
+    return {
+        startDate: startDate.toISOString().split('T')[0],
+        endDate: endDate.toISOString().split('T')[0]
+    };
+}
+    
         function updatePlot(data, table, currency, startDate, endDate, chartRef) {
             const labels = data.map(entry => entry.date);
             let datasets = [];
-
+    
             if (table === 'C') {
                 const bidValues = data.map(entry => entry.value.bid);
                 const askValues = data.map(entry => entry.value.ask);
-
+    
                 datasets = [
                     {
                         label: 'Kurs kupna',
@@ -454,19 +514,19 @@
                     }
                 ];
             }
-
+    
             const ctx = document.getElementById(chartRef).getContext('2d');
             if (chartRef === 'currencyPlot' && currencyChart) {
                 currencyChart.destroy();
             } else if (chartRef === 'downloadPlot' && downloadChart) {
                 downloadChart.destroy();
             }
-
+    
             const annotations = [];
             if (chartRef === 'currencyPlot') {
                 const selectedDate = document.getElementById('date').value;
                 const entryForDate = data.find(entry => entry.date === selectedDate);
-
+    
                 if (table === 'C') {
                     if (entryForDate?.value?.bid) {
                         annotations.push({
@@ -485,7 +545,7 @@
                             }
                         });
                     }
-
+    
                     if (entryForDate?.value?.ask) {
                         annotations.push({
                             type: 'polygon',
@@ -523,7 +583,7 @@
                     }
                 }
             }
-
+    
             const newChart = new Chart(ctx, {
                 type: 'line',
                 data: {
@@ -552,14 +612,14 @@
                     }
                 }
             });
-
+    
             if (chartRef === 'currencyPlot') {
                 currencyChart = newChart;
             } else if (chartRef === 'downloadPlot') {
                 downloadChart = newChart;
             }
         }
-
+    
         function toggleInfo(table) {
             let infoContent = '';
             if (table === 'A') {
@@ -572,7 +632,7 @@
             document.getElementById('info-content').innerHTML = infoContent;
             translateContent();
         }
-
+    
         function translateContent() {
             const translations = {
                 "pl": {
@@ -584,7 +644,7 @@
                     "tableLabel": "Tabela:",
                     "currencyLabel": "Waluta:",
                     "dateLabel": "Data:",
-                    "dateRangeLabel": "Zakres dat:",
+                    "dateRangeLabel": "Okres na wykresie:",
                     "oneMonth": "1 miesiąc",
                     "threeMonths": "3 miesiące",
                     "oneYear": "1 rok",
@@ -628,7 +688,7 @@
                     "tableCInfo": "Table C is an archive, containing past quotations of foreign exchange rates, used for statistics and monitoring the currency market."
                 }
             };
-
+    
             const language = document.documentElement.lang;
             document.querySelectorAll('[data-translate]').forEach(element => {
                 const key = element.getAttribute('data-translate');
@@ -637,7 +697,7 @@
                 }
             });
         }
-
+    
         $(document).ready(function() {
             $("#date").datepicker({
                 dateFormat: 'yy-mm-dd',
@@ -655,7 +715,7 @@
                     fetchAvailableDates(table, year, month, currency);
                 }
             });
-
+    
             $('#currency').on('change', function() {
                 const date = $('#date').val();
                 const year = new Date(date).getFullYear();
@@ -664,7 +724,7 @@
                 const currency = document.getElementById('currency').value;
                 fetchAvailableDates(table, year, month, currency).then(() => autoTypeDate(year, month));
             });
-
+    
             $('#date').on('change', function() {
                 const date = $(this).val();
                 const year = new Date(date).getFullYear();
@@ -673,7 +733,7 @@
                 const currency = document.getElementById('currency').value;
                 fetchAvailableDates(table, year, month, currency);
             });
-
+    
             $('#check-currency').on('click', function() {
                 const table = document.getElementById('table-select').value;
                 const currency = document.getElementById('currency').value;
@@ -682,14 +742,14 @@
                 const { startDate, endDate } = getDateRangeValues('currency');
                 fetchPlotData(table, currency, startDate, endDate, 'currencyPlot');
             });
-
+    
             $('.table-btn').on('click', function() {
                 $('.table-btn').removeClass('active');
                 $(this).addClass('active');
                 const table = $(this).attr('data-table');
                 toggleInfo(table);
             });
-
+    
             $('#table-select').on('change', function() {
                 const table = $(this).val();
                 updateCurrencyDropdown(table, 'currency');
@@ -697,19 +757,27 @@
                 const currency = document.getElementById('currency').value;
                 fetchAvailableDates(table, new Date(date).getFullYear(), new Date(date).getMonth() + 1, currency);
             });
-
+    
             $('#table-select-download').on('change', function() {
                 const table = $(this).val();
                 updateCurrencyDropdown(table, 'currency-download');
             });
 
+            $('#currency-download').on('change', function() {
+                const table = document.getElementById('table-select-download').value;
+                const currency = document.getElementById('currency-download').value;
+                const startDate = $("#date-start-label").text();
+                const endDate = $("#date-end-label").text();
+                fetchPlotData(table, currency, startDate, endDate, 'downloadPlot');
+            });
+    
             $('input[name="dateRange"]').on('change', function() {
                 const table = document.getElementById('table-select').value;
                 const currency = document.getElementById('currency').value;
                 const { startDate, endDate } = getDateRangeValues('currency');
                 fetchPlotData(table, currency, startDate, endDate, 'currencyPlot');
             });
-
+    
             // Handle CSV download
             $('#download-csv').on('click', function() {
                 const table = document.getElementById('table-select-download').value;
@@ -718,7 +786,7 @@
                 const endDate = $("#date-end-label").text();
                 window.location.href = `/download-csv/${table}/${currency}/?start_date=${startDate}&end_date=${endDate}`;
             });
-
+    
             // Set default table to A on page load
             updateCurrencyDropdown('A', 'currency');
             updateCurrencyDropdown('A', 'currency-download');
@@ -732,35 +800,36 @@
                 contentBox.toggleClass('collapsed');
                 contentBoxBody.slideToggle(300);
             });
-
+    
             // Initial state: expand all boxes
             $('.content-box').each(function() {
                 $(this).find('.content-box-body').show();
             });
-
+    
             const defaultTable = 'A';
             const defaultCurrency = $('#currency').val();
             fetchDateRanges(defaultTable, defaultCurrency, 'currency').then(() => {
                 const { startDate, endDate } = getDateRangeValues('currency');
                 fetchPlotData(defaultTable, defaultCurrency, startDate, endDate, 'currencyPlot');
             });
-
+    
             fetchDateRanges(defaultTable, defaultCurrency, 'download').then(() => {
                 const dateRange = dateRanges[defaultTable];
                 fetchPlotData(defaultTable, defaultCurrency, dateRange.min, dateRange.max, 'downloadPlot');
             });
-
+    
             $('#lang-pl').on('click', function() {
                 document.documentElement.lang = 'pl';
                 translateContent();
             });
-
+    
             $('#lang-en').on('click', function() {
                 document.documentElement.lang = 'en';
                 translateContent();
             });
-
+    
         });
     </script>
+    
 </body>
 </html>

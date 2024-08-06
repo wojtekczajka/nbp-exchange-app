@@ -1,0 +1,2 @@
+# Run the sync script every hour
+0 * * * * /usr/local/bin/python /app/sync_data.py >> /var/log/cron.log 2>&1
