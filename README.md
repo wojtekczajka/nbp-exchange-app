@@ -40,5 +40,5 @@ This application fetches and displays exchange rates from the National Bank of P
    docker-compose up --build
    ```
 
-3. The app will be available at \`http://localhost:8000\`.
+3. The app will be available at http://localhost:8000.
    
