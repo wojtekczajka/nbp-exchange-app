@@ -220,11 +220,28 @@
             try {
                 const data = await fetchData(`/check-currency/${table}/${currency}?date=${date}`);
                 const rateInfoElement = document.getElementById('rateInfo');
-                rateInfoElement.innerHTML = `Data: ${data.date}, Kurs: ${data.value.mid || data.value.bid + ' / ' + data.value.ask}`;
+                
+                if (table === 'C') {
+                    rateInfoElement.innerHTML = `Tabela: ${table}<br>Waluta: ${currency}<br>Data: ${data.date}<br>Kurs kupna: ${data.value.bid}<br>Kurs sprzedaży: ${data.value.ask}`;
+                } else {
+                    rateInfoElement.innerHTML = `Tabela: ${table}<br>Waluta: ${currency}<br>Data: ${data.date}<br>Kurs: ${data.value.mid}`;
+                }
             } catch (error) {
-                document.getElementById('rateInfo').innerText = "Brak danych dla podanej waluty lub daty.";
+                try {
+                    const nearestData = await fetchData(`/nearest-currency/${table}/${currency}?date=${date}`);
+                    const rateInfoElement = document.getElementById('rateInfo');
+                    
+                    if (table === 'C') {
+                        rateInfoElement.innerHTML = `Brak danych dla podanej waluty lub daty.<br>Najbliższy znaleziony wynik to:<br> Tabela: ${table}<br>Waluta: ${currency}<br>Data: ${nearestData.date}<br>Kurs kupna: ${nearestData.value.bid}<br>Kurs sprzedaży: ${nearestData.value.ask}`;
+                    } else {
+                        rateInfoElement.innerHTML = `Brak danych dla podanej waluty lub daty.<br>Najbliższy znaleziony wynik to:<br> Tabela: ${table}<br>Waluta: ${currency}<br>Data: ${nearestData.date}<br>Kurs: ${nearestData.value.mid}`;
+                    }
+                } catch (nearestError) {
+                    document.getElementById('rateInfo').innerText = "Brak danych dla podanej waluty lub daty.";
+                }
             }
         }
+
 
         function updateCurrencyDropdown(table, selectId) {
             const currencySelect = document.getElementById(selectId);
@@ -348,98 +365,148 @@
         }
 
         function updatePlot(data, table, currency, startDate, endDate, chartRef) {
-            const labels = data.map(entry => entry.date);
-            let datasets = [];
+    const labels = data.map(entry => entry.date);
+    let datasets = [];
 
-            if (table === 'C') {
-                const bidValues = data.map(entry => entry.value.bid);
-                const askValues = data.map(entry => entry.value.ask);
+    if (table === 'C') {
+        const bidValues = data.map(entry => entry.value.bid);
+        const askValues = data.map(entry => entry.value.ask);
 
-                datasets = [
-                    {
-                        label: 'Kurs kupna',
-                        data: bidValues,
-                        borderColor: 'rgba(75, 192, 192, 1)',
-                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                        borderWidth: 1
-                    },
-                    {
-                        label: 'Kurs sprzedaży',
-                        data: askValues,
-                        borderColor: 'rgba(192, 75, 75, 1)',
-                        backgroundColor: 'rgba(192, 75, 75, 0.2)',
-                        borderWidth: 1
+        datasets = [
+            {
+                label: 'Kurs kupna',
+                data: bidValues,
+                borderColor: 'rgba(75, 192, 192, 1)',
+                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                borderWidth: 1
+            },
+            {
+                label: 'Kurs sprzedaży',
+                data: askValues,
+                borderColor: 'rgba(192, 75, 75, 1)',
+                backgroundColor: 'rgba(192, 75, 75, 0.2)',
+                borderWidth: 1
+            }
+        ];
+    } else {
+        const values = data.map(entry => entry.value.mid);
+        datasets = [
+            {
+                label: 'Kurs Walut',
+                data: values,
+                borderColor: 'rgba(75, 192, 192, 1)',
+                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                borderWidth: 1
+            }
+        ];
+    }
+
+    const ctx = document.getElementById(chartRef).getContext('2d');
+    if (chartRef === 'currencyPlot' && currencyChart) {
+        currencyChart.destroy();
+    } else if (chartRef === 'downloadPlot' && downloadChart) {
+        downloadChart.destroy();
+    }
+
+    const annotations = [];
+    if (chartRef === 'currencyPlot') {
+        const selectedDate = document.getElementById('date').value;
+        const entryForDate = data.find(entry => entry.date === selectedDate);
+
+        if (table === 'C') {
+            if (entryForDate?.value?.bid) {
+                annotations.push({
+                    type: 'polygon',
+                    backgroundColor: 'rgba(255, 99, 132, 0.25)',
+                    borderColor: 'rgba(255, 99, 132, 1)',
+                    borderWidth: 2,
+                    radius: 10,
+                    sides: 6,
+                    xValue: selectedDate,
+                    yValue: entryForDate.value.bid,
+                    label: {
+                        content: 'Nearest Bid Date',
+                        enabled: true,
+                        position: 'center'
                     }
-                ];
-            } else {
-                const values = data.map(entry => entry.value.mid);
-                datasets = [
-                    {
-                        label: 'Kurs Walut',
-                        data: values,
-                        borderColor: 'rgba(75, 192, 192, 1)',
-                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                        borderWidth: 1
-                    }
-                ];
+                });
             }
 
-            const ctx = document.getElementById(chartRef).getContext('2d');
-            if (chartRef === 'currencyPlot' && currencyChart) {
-                currencyChart.destroy();
-            } else if (chartRef === 'downloadPlot' && downloadChart) {
-                downloadChart.destroy();
-            }
-
-            const newChart = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: labels,
-                    datasets: datasets
-                },
-                options: {
-                    scales: {
-                        x: {
-                            type: 'time',
-                            time: {
-                                unit: 'day',
-                                tooltipFormat: 'dd MMM yyyy'
-                            },
-                            min: new Date(startDate).getTime(),
-                            max: new Date(endDate).getTime()
-                        },
-                        y: {
-                            beginAtZero: false
-                        }
-                    },
-                    plugins: {
-                        annotation: {
-                            annotations: [{
-                                type: 'polygon',
-                                backgroundColor: 'rgba(255, 99, 132, 0.25)',
-                                borderColor: 'rgba(255, 99, 132, 1)',
-                                borderWidth: 2,
-                                radius: 10,
-                                sides: 6,
-                                xValue: document.getElementById('date').value,
-                                yValue: data.find(entry => entry.date === document.getElementById('date').value)?.value.mid || data.find(entry => entry.date === document.getElementById('date').value)?.value.bid,
-                                label: {
-                                    content: 'Nearest Date',
-                                    enabled: true,
-                                    position: 'center'
-                                }
-                            }]
-                        }
+            if (entryForDate?.value?.ask) {
+                annotations.push({
+                    type: 'polygon',
+                    backgroundColor: 'rgba(54, 162, 235, 0.25)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 2,
+                    radius: 10,
+                    sides: 6,
+                    xValue: selectedDate,
+                    yValue: entryForDate.value.ask,
+                    label: {
+                        content: 'Nearest Ask Date',
+                        enabled: true,
+                        position: 'center'
                     }
-                }
-            });
-
-            if (chartRef === 'currencyPlot') {
-                currencyChart = newChart;
-            } else if (chartRef === 'downloadPlot') {
-                downloadChart = newChart;
+                });
+            }
+        } else {
+            if (entryForDate?.value?.mid) {
+                annotations.push({
+                    type: 'polygon',
+                    backgroundColor: 'rgba(255, 99, 132, 0.25)',
+                    borderColor: 'rgba(255, 99, 132, 1)',
+                    borderWidth: 2,
+                    radius: 10,
+                    sides: 6,
+                    xValue: selectedDate,
+                    yValue: entryForDate.value.mid,
+                    label: {
+                        content: 'Nearest Date',
+                        enabled: true,
+                        position: 'center'
+                    }
+                });
             }
         }
+    }
+
+    const newChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: datasets
+        },
+        options: {
+            scales: {
+                x: {
+                    type: 'time',
+                    time: {
+                        unit: 'day',
+                        tooltipFormat: 'dd MMM yyyy'
+                    },
+                    min: new Date(startDate).getTime(),
+                    max: new Date(endDate).getTime()
+                },
+                y: {
+                    beginAtZero: false
+                }
+            },
+            plugins: {
+                annotation: {
+                    annotations: annotations
+                }
+            }
+        }
+    });
+
+    if (chartRef === 'currencyPlot') {
+        currencyChart = newChart;
+    } else if (chartRef === 'downloadPlot') {
+        downloadChart = newChart;
+    }
+}
+
+
 
         function toggleInfo(table) {
             let infoContent = '';
@@ -551,6 +618,19 @@
             // Initial state: expand all boxes
             $('.content-box').each(function() {
                 $(this).find('.content-box-body').show();
+            });
+
+            const defaultTable = 'A';
+            const defaultCurrency = $('#currency').val();
+            fetchDateRanges(defaultTable, defaultCurrency, 'currency').then(() => {
+                const { startDate, endDate } = getDateRangeValues('currency');
+                fetchPlotData(defaultTable, defaultCurrency, startDate, endDate, 'currencyPlot');
+                
+            });
+
+            fetchDateRanges(defaultTable, defaultCurrency, 'download').then(() => {
+                const dateRange = dateRanges[defaultTable];
+                fetchPlotData(defaultTable, defaultCurrency, dateRange.min, dateRange.max, 'downloadPlot');
             });
         });
     </script>

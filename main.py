@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 from typing import Dict
 from datetime import datetime
 from database import SessionLocal
-from crud import get_distinct_currencies, get_date_range, get_currency_rate, get_available_dates, get_plot_data
+from crud import get_distinct_currencies, get_date_range, get_currency_rate, get_available_dates, get_plot_data, get_nearest_currency_rate
 from io import StringIO
 
 app = FastAPI()
@@ -81,6 +81,18 @@ async def check_currency_range(table: str, currency: str, start_date: str, end_d
         return [{"date": str(record[0]), "value": {"mid": record[1]}} for record in data]
     elif table == 'C':
         return [{"date": str(record[0]), "value": {"bid": record[1], "ask": record[2]}} for record in data]
+    
+@app.get("/nearest-currency/{table}/{currency}")
+async def get_nearest_currency(table: str, currency: str, date: str, db: Session = Depends(get_db)):
+    date_obj = datetime.strptime(date, "%Y-%m-%d").date()
+    result = get_nearest_currency_rate(db, table, currency, date_obj)
+    if result:
+        if table in ['A', 'B']:
+            return {"date": str(result.date), "value": {"mid": result.mid}}
+        elif table == 'C':
+            return {"date": str(result.date), "value": {"bid": result.bid, "ask": result.ask}}
+    else:
+        raise HTTPException(status_code=404, detail="Not found")
 
 @app.get("/download-csv/{table}/{currency}")
 async def download_csv(table: str, currency: str, start_date: str, end_date: str, db: Session = Depends(get_db)):
