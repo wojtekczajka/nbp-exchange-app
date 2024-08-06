@@ -29,10 +29,6 @@ async def read_root(request: Request, db: Session = Depends(get_db)):
     currencies_b = get_distinct_currencies(db, 'B')
     currencies_c = get_distinct_currencies(db, 'C')
 
-    date_range_a = get_date_range(db, 'A')
-    date_range_b = get_date_range(db, 'B')
-    date_range_c = get_date_range(db, 'C')
-
     currencies_list_a = [{"code": currency, "name": currency}
                          for currency, in currencies_a]
     currencies_list_b = [{"code": currency, "name": currency}
@@ -44,10 +40,7 @@ async def read_root(request: Request, db: Session = Depends(get_db)):
         "request": request,
         "currencies_a": currencies_list_a,
         "currencies_b": currencies_list_b,
-        "currencies_c": currencies_list_c,
-        "date_range_a": {"min": date_range_a[0], "max": date_range_a[1]},
-        "date_range_b": {"min": date_range_b[0], "max": date_range_b[1]},
-        "date_range_c": {"min": date_range_c[0], "max": date_range_c[1]}
+        "currencies_c": currencies_list_c
     })
 
 
