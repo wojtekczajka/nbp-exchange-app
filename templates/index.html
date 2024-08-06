@@ -80,7 +80,7 @@
             display: flex;
             align-items: center;
         }
-
+        
 
     </style>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -116,7 +116,7 @@
     </header>
     
     
-    <div class="container mx-auto mt-10 max-w-5xl">
+    <div class="container mx-auto mt-10 max-w-4xl">
         <div class="form-box bg-white p-6 mt-6 shadow-lg rounded w-full content-box">
             <div class="content-box-header">
                 <h3 class="text-lg font-bold mb-4" data-translate="infoHeader">Informacje o tabelach kursów NBP</h3>
@@ -129,7 +129,6 @@
                     <button class="table-btn bg-yellow-500 text-white py-2 px-4 rounded" data-table="C" data-translate="tableC">Tabela C</button>
                 </div>
                 <div id="info-content" class="info-box-content bg-white p-4 mt-4 shadow rounded">
-                    <!-- This content will be dynamically updated based on the selected table -->
                 </div>
             </div>
         </div>
@@ -151,7 +150,6 @@
                 <div class="mb-4">
                     <label for="currency" class="block text-sm font-medium text-gray-700" data-translate="currencyLabel">Waluta:</label>
                     <select id="currency" name="currency" class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
-                        <!-- This will be populated dynamically -->
                     </select>
                 </div>
                 <div class="mb-4">
@@ -203,7 +201,6 @@
                 <div class="mb-4">
                     <label for="currency-download" class="block text-sm font-medium text-gray-700" data-translate="currencyLabelDownload">Waluta:</label>
                     <select id="currency-download" name="currency" class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
-                        <!-- This will be populated dynamically -->
                     </select>
                 </div>
                 <div class="mb-4">
@@ -397,7 +394,6 @@
             $("#date").datepicker("option", "minDate", new Date(range.min));
             $("#date").datepicker("option", "maxDate", new Date(range.max));
     
-            // Trigger initial fetch of available dates for the default month and year
             const year = new Date(dateInput.value).getFullYear();
             const month = new Date(dateInput.value).getMonth() + 1;
             const currency = document.getElementById('currency').value;
@@ -449,23 +445,22 @@
     if (context === 'currency') {
         const rangeValue = document.querySelector('input[name="dateRange"]:checked').value;
         if (rangeValue === '1m') {
-            // Set start and end dates to 1 month (30 days) period centered around the selected date
             startDate = new Date(date);
             startDate.setDate(startDate.getDate() - 15);
             endDate = new Date(date);
             endDate.setDate(endDate.getDate() + 15);
         } else if (rangeValue === '3m') {
-            // Set start and end dates to 3 months (90 days) period centered around the selected date
             startDate = new Date(date);
             startDate.setDate(startDate.getDate() - 45);
             endDate = new Date(date);
             endDate.setDate(endDate.getDate() + 45);
         } else if (rangeValue === '1y') {
-            // Set start and end dates to 1 year period centered around the selected date
             startDate = new Date(date);
-            startDate.setFullYear(startDate.getFullYear() - 0.5);
+            startDate.setFullYear(startDate.getFullYear() - 1);
+            startDate.setDate(startDate.getDate() + 183);
             endDate = new Date(date);
-            endDate.setFullYear(endDate.getFullYear() + 0.5);
+            endDate.setFullYear(endDate.getFullYear() + 1);
+            endDate.setDate(endDate.getDate() - 182);
         }
     } else {
         startDate = new Date($("#date-slider").slider("values", 0));
@@ -778,7 +773,6 @@
                 fetchPlotData(table, currency, startDate, endDate, 'currencyPlot');
             });
     
-            // Handle CSV download
             $('#download-csv').on('click', function() {
                 const table = document.getElementById('table-select-download').value;
                 const currency = document.getElementById('currency-download').value;
@@ -787,13 +781,11 @@
                 window.location.href = `/download-csv/${table}/${currency}/?start_date=${startDate}&end_date=${endDate}`;
             });
     
-            // Set default table to A on page load
             updateCurrencyDropdown('A', 'currency');
             updateCurrencyDropdown('A', 'currency-download');
             document.querySelector('.table-btn[data-table="A"]').classList.add('active');
             toggleInfo('A');
             
-            // Add toggle functionality for content boxes with animation
             $('.content-box-header').on('click', function() {
                 var contentBox = $(this).parent();
                 var contentBoxBody = contentBox.find('.content-box-body');
@@ -801,7 +793,6 @@
                 contentBoxBody.slideToggle(300);
             });
     
-            // Initial state: expand all boxes
             $('.content-box').each(function() {
                 $(this).find('.content-box-body').show();
             });
