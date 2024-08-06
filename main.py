@@ -3,6 +3,7 @@ from fastapi import FastAPI, Request, Depends, HTTPException
 from fastapi.responses import HTMLResponse, StreamingResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
+from typing import Dict
 from datetime import datetime
 from database import SessionLocal
 from crud import get_distinct_currencies, get_date_range, get_currency_rate, get_available_dates, get_plot_data
@@ -43,20 +44,23 @@ async def read_root(request: Request, db: Session = Depends(get_db)):
         "date_range_c": {"min": date_range_c[0], "max": date_range_c[1]}
     })
 
-@app.get("/date-ranges/{table}", response_model=dict)
-async def get_date_ranges(table: str, db: Session = Depends(get_db)):
-    date_range = get_date_range(db, table)
+@app.get("/date-ranges/{table}/{currency}", response_model=Dict[str, str])
+async def get_date_ranges(table: str, currency: str, db: Session = Depends(get_db)):
+    date_range = get_date_range(db, table, currency)
     if date_range:
-        return {"min": date_range[0], "max": date_range[1]}
+        return {
+            "min": date_range[0].isoformat(),
+            "max": date_range[1].isoformat()
+        }
     else:
-        raise HTTPException(status_code=404, detail="Invalid table specified")
+        raise HTTPException(status_code=404, detail="Invalid table or currency specified")
 
-@app.get("/available-dates/{table}/{year}/{month}")
+@app.get("/available-dates/{table}/{year}/{month}/{currency}")
 async def get_available_dates_endpoint(table: str, year: int, month: int, currency: str, db: Session = Depends(get_db)):
     dates = get_available_dates(db, table, year, month, currency)
     return [date[0] for date in dates]
 
-@app.get("/check-currency")
+@app.get("/check-currency/{table}/{currency}")
 async def check_currency(table: str, currency: str, date: str, db: Session = Depends(get_db)):
     date_obj = datetime.strptime(date, "%Y-%m-%d").date()
     result = get_currency_rate(db, table, currency, date_obj)
@@ -68,7 +72,7 @@ async def check_currency(table: str, currency: str, date: str, db: Session = Dep
     else:
         raise HTTPException(status_code=404, detail="Not found")
 
-@app.get("/check-currency-range")
+@app.get("/check-currency-range/{table}/{currency}")
 async def check_currency_range(table: str, currency: str, start_date: str, end_date: str, db: Session = Depends(get_db)):
     start_date_obj = datetime.strptime(start_date, "%Y-%m-%d").date()
     end_date_obj = datetime.strptime(end_date, "%Y-%m-%d").date()
@@ -78,7 +82,7 @@ async def check_currency_range(table: str, currency: str, start_date: str, end_d
     elif table == 'C':
         return [{"date": str(record[0]), "value": {"bid": record[1], "ask": record[2]}} for record in data]
 
-@app.get("/download-csv")
+@app.get("/download-csv/{table}/{currency}")
 async def download_csv(table: str, currency: str, start_date: str, end_date: str, db: Session = Depends(get_db)):
     start_date_obj = datetime.strptime(start_date, "%Y-%m-%d").date()
     end_date_obj = datetime.strptime(end_date, "%Y-%m-%d").date()

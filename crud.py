@@ -10,11 +10,16 @@ def get_distinct_currencies(db: Session, table: str):
     elif table == 'C':
         return db.query(CurrencyC.currency).distinct().all()
 
-def get_date_range(db: Session, table: str):
+def get_date_range(db: Session, table: str, currency: str = 'USD'):
     if table in ['A', 'B']:
-        return db.query(func.min(CurrencyAB.date), func.max(CurrencyAB.date)).filter(CurrencyAB.table == table).first()
+        return db.query(func.min(CurrencyAB.date), func.max(CurrencyAB.date))\
+                 .filter(CurrencyAB.table == table)\
+                 .filter(CurrencyAB.currency == currency)\
+                 .first()
     elif table == 'C':
-        return db.query(func.min(CurrencyC.date), func.max(CurrencyC.date)).first()
+        return db.query(func.min(CurrencyC.date), func.max(CurrencyC.date))\
+                 .filter(CurrencyC.currency == currency)\
+                 .first()
 
 def get_available_dates(db: Session, table: str, year: int, month: int, currency: str):
     if table in ['A', 'B']:

@@ -6,6 +6,7 @@
     <title>{% block title %}Kursy Walut NBP{% endblock %}</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@1.2.2"></script>
@@ -14,7 +15,7 @@
             font-family: Arial, sans-serif;
         }
         .highlight {
-            background-color: #ffd700 !important;
+            background-color: #40d822 !important;
         }
         .info-box-content {
             box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
@@ -27,113 +28,159 @@
             justify-content: space-between;
             margin-top: 10px;
         }
+        .content-box-header {
+            display: flex;
+            justify-content: space-between;
+            cursor: pointer;
+        }
+        .content-box-header .icon {
+            font-size: 1.25rem;
+            transition: transform 0.3s ease;
+        }
+        .content-box.collapsed .content-box-header .icon {
+            transform: rotate(-90deg);
+        }
+        .content-box-body {
+            display: none;
+        }
+        .fixed-top {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1000;
+        }
+        .fixed-bottom {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+        }
     </style>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
 </head>
-<body class="bg-gray-100 font-sans">
-    <header class="bg-blue-600 text-white text-center py-4">
+<body class="bg-gray-100 font-sans pt-20 pb-20">
+    <header class="bg-blue-600 text-white text-center py-4 fixed-top">
         <h1 class="text-2xl">Kursy Walut NBP</h1>
     </header>
     <div class="container mx-auto mt-10 max-w-5xl">
-        <div class="form-box bg-white p-6 mt-6 shadow-lg rounded w-full">
-            <h3 class="text-lg font-bold mb-4">Informacje o tabelach kursów NBP</h3>
-            <div class="flex justify-center space-x-4 mb-4">
-                <button class="table-btn bg-blue-500 text-white py-2 px-4 rounded" data-table="A">Tabela A</button>
-                <button class="table-btn bg-green-500 text-white py-2 px-4 rounded" data-table="B">Tabela B</button>
-                <button class="table-btn bg-yellow-500 text-white py-2 px-4 rounded" data-table="C">Tabela C</button>
+        <div class="form-box bg-white p-6 mt-6 shadow-lg rounded w-full content-box">
+            <div class="content-box-header">
+                <h3 class="text-lg font-bold mb-4">Informacje o tabelach kursów NBP</h3>
+                <i class="fas fa-chevron-down icon"></i>
             </div>
-            <div id="info-content" class="info-box-content bg-white p-4 mt-4 shadow rounded">
-                <!-- This content will be dynamically updated based on the selected table -->
-            </div>
-        </div>
-
-        <div class="form-box bg-white p-6 mt-6 shadow-lg rounded w-full max-w-5xl mx-auto">
-            <h3 class="text-lg font-bold mb-4">Sprawdź kurs walut</h3>
-            <div class="mb-4">
-                <label for="table-select" class="block text-sm font-medium text-gray-700">Tabela:</label>
-                <select id="table-select" name="table" class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
-                    <option value="A">Tabela A</option>
-                    <option value="B">Tabela B</option>
-                    <option value="C">Tabela C</option>
-                </select>
-            </div>
-            <div class="mb-4">
-                <label for="currency" class="block text-sm font-medium text-gray-700">Waluta:</label>
-                <select id="currency" name="currency" class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
-                    <!-- This will be populated dynamically -->
-                </select>
-            </div>
-            <div class="mb-4">
-                <label for="date" class="block text-sm font-medium text-gray-700">Data:</label>
-                <input type="text" id="date" name="date" required class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
-            </div>
-            <div class="mb-4">
-                <div class="block text-sm font-medium text-gray-700 mb-2">Zakres dat:</div>
-                <label class="inline-flex items-center">
-                    <input type="radio" name="dateRange" value="1m" class="form-radio" checked>
-                    <span class="ml-2">1 miesiąc</span>
-                </label>
-                <label class="inline-flex items-center ml-6">
-                    <input type="radio" name="dateRange" value="3m" class="form-radio">
-                    <span class="ml-2">3 miesiące</span>
-                </label>
-                <label class="inline-flex items-center ml-6">
-                    <input type="radio" name="dateRange" value="1y" class="form-radio">
-                    <span class="ml-2">1 rok</span>
-                </label>
-            </div>
-            <div class="flex justify-center mb-4">
-                <button id="check-currency" class="bg-blue-500 text-white py-2 px-4 rounded">Sprawdź</button>
-            </div>
-            <div id="currencyRateResult" class="currency-rate-result-box bg-white p-6 mt-6 shadow-lg rounded w-full max-w-5xl mx-auto">
-                <h3 class="text-lg font-bold mb-4 text-center">Wynik Kursu Walut</h3>
-                <div id="rateInfo" class="text-lg font-medium text-gray-700 mb-4 p-4 border rounded bg-gray-100 text-center"></div>
-            </div>
-            <div class="plot-box bg-white p-6 mt-6 shadow-lg rounded w-full">
-                <canvas id="currencyPlot" width="800" height="400"></canvas>
-            </div>
-        </div>
-
-        <div class="form-box bg-white p-6 mt-6 shadow-lg rounded w-full max-w-5xl mx-auto">
-            <h3 class="text-lg font-bold mb-4">Pobierz CSV</h3>
-            <div class="mb-4">
-                <label for="table-select-download" class="block text-sm font-medium text-gray-700">Tabela:</label>
-                <select id="table-select-download" name="table" class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
-                    <option value="A">Tabela A</option>
-                    <option value="B">Tabela B</option>
-                    <option value="C">Tabela C</option>
-                </select>
-            </div>
-            <div class="mb-4">
-                <label for="currency-download" class="block text-sm font-medium text-gray-700">Waluta:</label>
-                <select id="currency-download" name="currency" class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
-                    <!-- This will be populated dynamically -->
-                </select>
-            </div>
-            <div class="mb-4">
-                <label for="date-slider" class="block text-sm font-medium text-gray-700">Wybierz zakres dat:</label>
-                <div id="date-slider"></div>
-                <div class="slider-label">
-                    <span id="date-start-label"></span>
-                    <span id="date-end-label"></span>
+            <div class="content-box-body">
+                <div class="flex justify-center space-x-4 mb-4">
+                    <button class="table-btn bg-blue-500 text-white py-2 px-4 rounded" data-table="A">Tabela A</button>
+                    <button class="table-btn bg-green-500 text-white py-2 px-4 rounded" data-table="B">Tabela B</button>
+                    <button class="table-btn bg-yellow-500 text-white py-2 px-4 rounded" data-table="C">Tabela C</button>
+                </div>
+                <div id="info-content" class="info-box-content bg-white p-4 mt-4 shadow rounded">
+                    <!-- This content will be dynamically updated based on the selected table -->
                 </div>
             </div>
-            <div class="flex justify-center">
-                <button id="download-csv" class="bg-blue-500 text-white py-2 px-4 rounded">Pobierz CSV</button>
+        </div>
+
+        <div class="form-box bg-white p-6 mt-6 shadow-lg rounded w-full max-w-5xl mx-auto content-box">
+            <div class="content-box-header">
+                <h3 class="text-lg font-bold mb-4">Sprawdź kurs walut</h3>
+                <i class="fas fa-chevron-down icon"></i>
             </div>
-            <div class="plot-box bg-white p-6 mt-6 shadow-lg rounded w-full">
-                <canvas id="downloadPlot" width="800" height="400"></canvas>
+            <div class="content-box-body">
+                <div class="mb-4">
+                    <label for="table-select" class="block text-sm font-medium text-gray-700">Tabela:</label>
+                    <select id="table-select" name="table" class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
+                        <option value="A">Tabela A</option>
+                        <option value="B">Tabela B</option>
+                        <option value="C">Tabela C</option>
+                    </select>
+                </div>
+                <div class="mb-4">
+                    <label for="currency" class="block text-sm font-medium text-gray-700">Waluta:</label>
+                    <select id="currency" name="currency" class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
+                        <!-- This will be populated dynamically -->
+                    </select>
+                </div>
+                <div class="mb-4">
+                    <label for="date" class="block text-sm font-medium text-gray-700">Data:</label>
+                    <input type="text" id="date" name="date" required class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
+                </div>
+                <div class="mb-4">
+                    <div class="block text-sm font-medium text-gray-700 mb-2">Zakres dat:</div>
+                    <label class="inline-flex items-center">
+                        <input type="radio" name="dateRange" value="1m" class="form-radio" checked>
+                        <span class="ml-2">1 miesiąc</span>
+                    </label>
+                    <label class="inline-flex items-center ml-6">
+                        <input type="radio" name="dateRange" value="3m" class="form-radio">
+                        <span class="ml-2">3 miesiące</span>
+                    </label>
+                    <label class="inline-flex items-center ml-6">
+                        <input type="radio" name="dateRange" value="1y" class="form-radio">
+                        <span class="ml-2">1 rok</span>
+                    </label>
+                </div>
+                <div class="flex justify-center mb-4">
+                    <button id="check-currency" class="bg-blue-500 text-white py-2 px-4 rounded">Sprawdź</button>
+                </div>
+                <div id="currencyRateResult" class="currency-rate-result-box bg-white p-6 mt-6 shadow-lg rounded w-full max-w-5xl mx-auto">
+                    <h3 class="text-lg font-bold mb-4 text-center">Wynik Kursu Walut</h3>
+                    <div id="rateInfo" class="text-lg font-medium text-gray-700 mb-4 p-4 border rounded bg-gray-100 text-center"></div>
+                </div>
+                <div class="plot-box bg-white p-6 mt-6 shadow-lg rounded w-full">
+                    <canvas id="currencyPlot" width="800" height="400"></canvas>
+                </div>
             </div>
         </div>
-        <div id="info-NBP" class="form-box bg-white p-6 mt-6 shadow-lg rounded w-full max-w-5xl mx-auto">
-            <h3 class="text-lg font-bold mb-4">Informacja o kursie NBP</h3>
-            <p>Kurs NBP nie nadaje się do śledzenia aktualnej sytuacji na rynku i najnowszych zmian, ponieważ dane aktualizowane są tylko raz dziennie, jednak jest on wykorzystywany do przygotowywania wykresów i analiz długoterminowych oraz sporządzania statystyk. Oprócz tego kursy NBP są wykorzystywane podczas niektórych czynności prawnych wymagających rzetelnych i dokładnych statystyk - przykładem może być choćby określanie wartości zobowiązań cywilnoprawnych, obliczanie różnic kursowych, przeliczanie przychodów bądź kosztów, a także obliczanie wartości aktywów w obcych walutach.</p>
+
+        <div class="form-box bg-white p-6 mt-6 shadow-lg rounded w-full max-w-5xl mx-auto content-box">
+            <div class="content-box-header">
+                <h3 class="text-lg font-bold mb-4">Pobierz CSV</h3>
+                <i class="fas fa-chevron-down icon"></i>
+            </div>
+            <div class="content-box-body">
+                <div class="mb-4">
+                    <label for="table-select-download" class="block text-sm font-medium text-gray-700">Tabela:</label>
+                    <select id="table-select-download" name="table" class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
+                        <option value="A">Tabela A</option>
+                        <option value="B">Tabela B</option>
+                        <option value="C">Tabela C</option>
+                    </select>
+                </div>
+                <div class="mb-4">
+                    <label for="currency-download" class="block text-sm font-medium text-gray-700">Waluta:</label>
+                    <select id="currency-download" name="currency" class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
+                        <!-- This will be populated dynamically -->
+                    </select>
+                </div>
+                <div class="mb-4">
+                    <label for="date-slider" class="block text-sm font-medium text-gray-700">Wybierz zakres dat:</label>
+                    <div id="date-slider"></div>
+                    <div class="slider-label">
+                        <span id="date-start-label"></span>
+                        <span id="date-end-label"></span>
+                    </div>
+                </div>
+                <div class="flex justify-center">
+                    <button id="download-csv" class="bg-blue-500 text-white py-2 px-4 rounded">Pobierz CSV</button>
+                </div>
+                <div class="plot-box bg-white p-6 mt-6 shadow-lg rounded w-full">
+                    <canvas id="downloadPlot" width="800" height="400"></canvas>
+                </div>
+            </div>
+        </div>
+        <div id="info-NBP" class="form-box bg-white p-6 mt-6 shadow-lg rounded w-full max-w-5xl mx-auto content-box">
+            <div class="content-box-header">
+                <h3 class="text-lg font-bold mb-4">Informacja o kursie NBP</h3>
+                <i class="fas fa-chevron-down icon"></i>
+            </div>
+            <div class="content-box-body">
+                <p>Kurs NBP nie nadaje się do śledzenia aktualnej sytuacji na rynku i najnowszych zmian, ponieważ dane aktualizowane są tylko raz dziennie, jednak jest on wykorzystywany do przygotowywania wykresów i analiz długoterminowych oraz sporządzania statystyk. Oprócz tego kursy NBP są wykorzystywane podczas niektórych czynności prawnych wymagających rzetelnych i dokładnych statystyk - przykładem może być choćby określanie wartości zobowiązań cywilnoprawnych, obliczanie różnic kursowych, przeliczanie przychodów bądź kosztów, a także obliczanie wartości aktywów w obcych walutach.</p>
+            </div>
         </div>
     </div>
 
     {% block footer %}
-    <footer class="bg-blue-600 text-white text-center py-4 mt-10">
+    <footer class="bg-blue-600 text-white text-center py-4 mt-10 fixed-bottom">
         &copy; 2024 Kursy Walut NBP
     </footer>
     {% endblock %}
@@ -148,8 +195,8 @@
             return response.json();
         }
 
-        async function fetchDateRanges(table, context) {
-            const data = await fetchData(`/date-ranges/${table}`);
+        async function fetchDateRanges(table, currency, context) {
+            const data = await fetchData(`/date-ranges/${table}/${currency}`);
             dateRanges[table] = data;
             if (context === 'currency') {
                 updateDateRange(table, 'currency');
@@ -159,19 +206,19 @@
         }
 
         async function fetchAvailableDates(table, year, month, currency) {
-            const data = await fetchData(`/available-dates/${table}/${year}/${month}?currency=${currency}`);
+            const data = await fetchData(`/available-dates/${table}/${year}/${month}/${currency}`);
             availableDates = data;
             highlightDatesWithRecords();
         }
 
         async function fetchPlotData(table, currency, startDate, endDate, chartRef) {
-            const data = await fetchData(`/check-currency-range?table=${table}&currency=${currency}&start_date=${startDate}&end_date=${endDate}`);
+            const data = await fetchData(`/check-currency-range/${table}/${currency}?start_date=${startDate}&end_date=${endDate}`);
             updatePlot(data, table, currency, startDate, endDate, chartRef);
         }
 
         async function fetchCurrencyValue(table, currency, date) {
             try {
-                const data = await fetchData(`/check-currency?table=${table}&currency=${currency}&date=${date}`);
+                const data = await fetchData(`/check-currency/${table}/${currency}?date=${date}`);
                 const rateInfoElement = document.getElementById('rateInfo');
                 rateInfoElement.innerHTML = `Data: ${data.date}, Kurs: ${data.value.mid || data.value.bid + ' / ' + data.value.ask}`;
             } catch (error) {
@@ -200,9 +247,9 @@
             });
 
             if (selectId === 'currency') {
-                fetchDateRanges(table, 'currency');
+                fetchDateRanges(table, document.getElementById('currency').value,'currency');
             } else {
-                fetchDateRanges(table, 'download');
+                fetchDateRanges(table, document.getElementById('currency-download').value,'download');
             }
         }
 
@@ -484,7 +531,7 @@
                 const currency = document.getElementById('currency-download').value;
                 const startDate = $("#date-start-label").text();
                 const endDate = $("#date-end-label").text();
-                window.location.href = `/download-csv?table=${table}&currency=${currency}&start_date=${startDate}&end_date=${endDate}`;
+                window.location.href = `/download-csv/${table}/${currency}/?start_date=${startDate}&end_date=${endDate}`;
             });
 
             // Set default table to A on page load
@@ -493,8 +540,18 @@
             document.querySelector('.table-btn[data-table="A"]').classList.add('active');
             toggleInfo('A');
             
-            
-            
+            // Add toggle functionality for content boxes with animation
+            $('.content-box-header').on('click', function() {
+                var contentBox = $(this).parent();
+                var contentBoxBody = contentBox.find('.content-box-body');
+                contentBox.toggleClass('collapsed');
+                contentBoxBody.slideToggle(300);
+            });
+
+            // Initial state: expand all boxes
+            $('.content-box').each(function() {
+                $(this).find('.content-box-body').show();
+            });
         });
     </script>
 </body>
