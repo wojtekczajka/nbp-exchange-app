@@ -54,25 +54,79 @@
             bottom: 0;
             width: 100%;
         }
+        .language-select-container {
+            position: absolute;
+            right: 0;
+        }
+        .language-select img {
+            cursor: pointer;
+            width: 32px;
+            height: 32px;
+            margin-left: 8px;
+            display: inline-block;
+        }
+        .header-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+        .header-container h1 {
+            margin: 0;
+        }
+        .language-select-container {
+            position: absolute;
+            right: 0;
+            display: flex;
+            align-items: center;
+        }
+
+
     </style>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
 </head>
 <body class="bg-gray-100 font-sans pt-20 pb-20">
-    <header class="bg-blue-600 text-white text-center py-4 fixed-top">
-        <h1 class="text-2xl">Kursy Walut NBP</h1>
+    <header class="bg-blue-600 text-white py-4 fixed-top">
+        <div class="header-container container mx-auto">
+            <h1 class="text-2xl">Kursy Walut NBP</h1>
+            <div class="language-select-container">
+                <div class="language-select">
+                    <img
+                    id="lang-en"
+                    src="https://flagcdn.com/40x30/gb.png"
+                    srcset="https://flagcdn.com/80x60/gb.png 2x,
+                        https://flagcdn.com/120x90/gb.png 3x"
+                    width="40"
+                    height="30"
+                    alt="English"
+                >
+                <img
+                    id="lang-pl"
+                    src="https://flagcdn.com/40x30/pl.png"
+                    srcset="https://flagcdn.com/80x60/pl.png 2x,
+                        https://flagcdn.com/120x90/pl.png 3x"
+                    width="40"
+                    height="30"
+                    alt="Polski"
+                >
+                </div>
+            </div>
+        </div>
     </header>
+    
+    
     <div class="container mx-auto mt-10 max-w-5xl">
         <div class="form-box bg-white p-6 mt-6 shadow-lg rounded w-full content-box">
             <div class="content-box-header">
-                <h3 class="text-lg font-bold mb-4">Informacje o tabelach kursów NBP</h3>
+                <h3 class="text-lg font-bold mb-4" data-translate="infoHeader">Informacje o tabelach kursów NBP</h3>
                 <i class="fas fa-chevron-down icon"></i>
             </div>
             <div class="content-box-body">
                 <div class="flex justify-center space-x-4 mb-4">
-                    <button class="table-btn bg-blue-500 text-white py-2 px-4 rounded" data-table="A">Tabela A</button>
-                    <button class="table-btn bg-green-500 text-white py-2 px-4 rounded" data-table="B">Tabela B</button>
-                    <button class="table-btn bg-yellow-500 text-white py-2 px-4 rounded" data-table="C">Tabela C</button>
+                    <button class="table-btn bg-blue-500 text-white py-2 px-4 rounded" data-table="A" data-translate="tableA">Tabela A</button>
+                    <button class="table-btn bg-green-500 text-white py-2 px-4 rounded" data-table="B" data-translate="tableB">Tabela B</button>
+                    <button class="table-btn bg-yellow-500 text-white py-2 px-4 rounded" data-table="C" data-translate="tableC">Tabela C</button>
                 </div>
                 <div id="info-content" class="info-box-content bg-white p-4 mt-4 shadow rounded">
                     <!-- This content will be dynamically updated based on the selected table -->
@@ -82,12 +136,12 @@
 
         <div class="form-box bg-white p-6 mt-6 shadow-lg rounded w-full max-w-5xl mx-auto content-box">
             <div class="content-box-header">
-                <h3 class="text-lg font-bold mb-4">Sprawdź kurs walut</h3>
+                <h3 class="text-lg font-bold mb-4" data-translate="checkCurrencyHeader">Sprawdź kurs walut</h3>
                 <i class="fas fa-chevron-down icon"></i>
             </div>
             <div class="content-box-body">
                 <div class="mb-4">
-                    <label for="table-select" class="block text-sm font-medium text-gray-700">Tabela:</label>
+                    <label for="table-select" class="block text-sm font-medium text-gray-700" data-translate="tableLabel">Tabela:</label>
                     <select id="table-select" name="table" class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
                         <option value="A">Tabela A</option>
                         <option value="B">Tabela B</option>
@@ -95,35 +149,35 @@
                     </select>
                 </div>
                 <div class="mb-4">
-                    <label for="currency" class="block text-sm font-medium text-gray-700">Waluta:</label>
+                    <label for="currency" class="block text-sm font-medium text-gray-700" data-translate="currencyLabel">Waluta:</label>
                     <select id="currency" name="currency" class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
                         <!-- This will be populated dynamically -->
                     </select>
                 </div>
                 <div class="mb-4">
-                    <label for="date" class="block text-sm font-medium text-gray-700">Data:</label>
+                    <label for="date" class="block text-sm font-medium text-gray-700" data-translate="dateLabel">Data:</label>
                     <input type="text" id="date" name="date" required class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
                 </div>
                 <div class="mb-4">
-                    <div class="block text-sm font-medium text-gray-700 mb-2">Zakres dat:</div>
+                    <div class="block text-sm font-medium text-gray-700 mb-2" data-translate="dateRangeLabel">Zakres dat:</div>
                     <label class="inline-flex items-center">
                         <input type="radio" name="dateRange" value="1m" class="form-radio" checked>
-                        <span class="ml-2">1 miesiąc</span>
+                        <span class="ml-2" data-translate="oneMonth">1 miesiąc</span>
                     </label>
                     <label class="inline-flex items-center ml-6">
                         <input type="radio" name="dateRange" value="3m" class="form-radio">
-                        <span class="ml-2">3 miesiące</span>
+                        <span class="ml-2" data-translate="threeMonths">3 miesiące</span>
                     </label>
                     <label class="inline-flex items-center ml-6">
                         <input type="radio" name="dateRange" value="1y" class="form-radio">
-                        <span class="ml-2">1 rok</span>
+                        <span class="ml-2" data-translate="oneYear">1 rok</span>
                     </label>
                 </div>
                 <div class="flex justify-center mb-4">
-                    <button id="check-currency" class="bg-blue-500 text-white py-2 px-4 rounded">Sprawdź</button>
+                    <button id="check-currency" class="bg-blue-500 text-white py-2 px-4 rounded" data-translate="checkButton">Sprawdź</button>
                 </div>
                 <div id="currencyRateResult" class="currency-rate-result-box bg-white p-6 mt-6 shadow-lg rounded w-full max-w-5xl mx-auto">
-                    <h3 class="text-lg font-bold mb-4 text-center">Wynik Kursu Walut</h3>
+                    <h3 class="text-lg font-bold mb-4 text-center" data-translate="resultHeader">Wynik Kursu Walut</h3>
                     <div id="rateInfo" class="text-lg font-medium text-gray-700 mb-4 p-4 border rounded bg-gray-100 text-center"></div>
                 </div>
                 <div class="plot-box bg-white p-6 mt-6 shadow-lg rounded w-full">
@@ -134,12 +188,12 @@
 
         <div class="form-box bg-white p-6 mt-6 shadow-lg rounded w-full max-w-5xl mx-auto content-box">
             <div class="content-box-header">
-                <h3 class="text-lg font-bold mb-4">Pobierz CSV</h3>
+                <h3 class="text-lg font-bold mb-4" data-translate="downloadHeader">Pobierz CSV</h3>
                 <i class="fas fa-chevron-down icon"></i>
             </div>
             <div class="content-box-body">
                 <div class="mb-4">
-                    <label for="table-select-download" class="block text-sm font-medium text-gray-700">Tabela:</label>
+                    <label for="table-select-download" class="block text-sm font-medium text-gray-700" data-translate="tableLabelDownload">Tabela:</label>
                     <select id="table-select-download" name="table" class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
                         <option value="A">Tabela A</option>
                         <option value="B">Tabela B</option>
@@ -147,13 +201,13 @@
                     </select>
                 </div>
                 <div class="mb-4">
-                    <label for="currency-download" class="block text-sm font-medium text-gray-700">Waluta:</label>
+                    <label for="currency-download" class="block text-sm font-medium text-gray-700" data-translate="currencyLabelDownload">Waluta:</label>
                     <select id="currency-download" name="currency" class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
                         <!-- This will be populated dynamically -->
                     </select>
                 </div>
                 <div class="mb-4">
-                    <label for="date-slider" class="block text-sm font-medium text-gray-700">Wybierz zakres dat:</label>
+                    <label for="date-slider" class="block text-sm font-medium text-gray-700" data-translate="dateRangeDownload">Wybierz zakres dat:</label>
                     <div id="date-slider"></div>
                     <div class="slider-label">
                         <span id="date-start-label"></span>
@@ -161,7 +215,7 @@
                     </div>
                 </div>
                 <div class="flex justify-center">
-                    <button id="download-csv" class="bg-blue-500 text-white py-2 px-4 rounded">Pobierz CSV</button>
+                    <button id="download-csv" class="bg-blue-500 text-white py-2 px-4 rounded" data-translate="downloadButton">Pobierz CSV</button>
                 </div>
                 <div class="plot-box bg-white p-6 mt-6 shadow-lg rounded w-full">
                     <canvas id="downloadPlot" width="800" height="400"></canvas>
@@ -170,11 +224,11 @@
         </div>
         <div id="info-NBP" class="form-box bg-white p-6 mt-6 shadow-lg rounded w-full max-w-5xl mx-auto content-box">
             <div class="content-box-header">
-                <h3 class="text-lg font-bold mb-4">Informacja o kursie NBP</h3>
+                <h3 class="text-lg font-bold mb-4" data-translate="infoNBPHeader">Informacja o kursie NBP</h3>
                 <i class="fas fa-chevron-down icon"></i>
             </div>
             <div class="content-box-body">
-                <p>Kurs NBP nie nadaje się do śledzenia aktualnej sytuacji na rynku i najnowszych zmian, ponieważ dane aktualizowane są tylko raz dziennie, jednak jest on wykorzystywany do przygotowywania wykresów i analiz długoterminowych oraz sporządzania statystyk. Oprócz tego kursy NBP są wykorzystywane podczas niektórych czynności prawnych wymagających rzetelnych i dokładnych statystyk - przykładem może być choćby określanie wartości zobowiązań cywilnoprawnych, obliczanie różnic kursowych, przeliczanie przychodów bądź kosztów, a także obliczanie wartości aktywów w obcych walutach.</p>
+                <p data-translate="infoNBPContent">Kurs NBP nie nadaje się do śledzenia aktualnej sytuacji na rynku i najnowszych zmian, ponieważ dane aktualizowane są tylko raz dziennie, jednak jest on wykorzystywany do przygotowywania wykresów i analiz długoterminowych oraz sporządzania statystyk. Oprócz tego kursy NBP są wykorzystywane podczas niektórych czynności prawnych wymagających rzetelnych i dokładnych statystyk - przykładem może być choćby określanie wartości zobowiązań cywilnoprawnych, obliczanie różnic kursowych, przeliczanie przychodów bądź kosztów, a także obliczanie wartości aktywów w obcych walutach.</p>
             </div>
         </div>
     </div>
@@ -365,159 +419,223 @@
         }
 
         function updatePlot(data, table, currency, startDate, endDate, chartRef) {
-    const labels = data.map(entry => entry.date);
-    let datasets = [];
+            const labels = data.map(entry => entry.date);
+            let datasets = [];
 
-    if (table === 'C') {
-        const bidValues = data.map(entry => entry.value.bid);
-        const askValues = data.map(entry => entry.value.ask);
+            if (table === 'C') {
+                const bidValues = data.map(entry => entry.value.bid);
+                const askValues = data.map(entry => entry.value.ask);
 
-        datasets = [
-            {
-                label: 'Kurs kupna',
-                data: bidValues,
-                borderColor: 'rgba(75, 192, 192, 1)',
-                backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                borderWidth: 1
-            },
-            {
-                label: 'Kurs sprzedaży',
-                data: askValues,
-                borderColor: 'rgba(192, 75, 75, 1)',
-                backgroundColor: 'rgba(192, 75, 75, 0.2)',
-                borderWidth: 1
-            }
-        ];
-    } else {
-        const values = data.map(entry => entry.value.mid);
-        datasets = [
-            {
-                label: 'Kurs Walut',
-                data: values,
-                borderColor: 'rgba(75, 192, 192, 1)',
-                backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                borderWidth: 1
-            }
-        ];
-    }
-
-    const ctx = document.getElementById(chartRef).getContext('2d');
-    if (chartRef === 'currencyPlot' && currencyChart) {
-        currencyChart.destroy();
-    } else if (chartRef === 'downloadPlot' && downloadChart) {
-        downloadChart.destroy();
-    }
-
-    const annotations = [];
-    if (chartRef === 'currencyPlot') {
-        const selectedDate = document.getElementById('date').value;
-        const entryForDate = data.find(entry => entry.date === selectedDate);
-
-        if (table === 'C') {
-            if (entryForDate?.value?.bid) {
-                annotations.push({
-                    type: 'polygon',
-                    backgroundColor: 'rgba(255, 99, 132, 0.25)',
-                    borderColor: 'rgba(255, 99, 132, 1)',
-                    borderWidth: 2,
-                    radius: 10,
-                    sides: 6,
-                    xValue: selectedDate,
-                    yValue: entryForDate.value.bid,
-                    label: {
-                        content: 'Nearest Bid Date',
-                        enabled: true,
-                        position: 'center'
-                    }
-                });
-            }
-
-            if (entryForDate?.value?.ask) {
-                annotations.push({
-                    type: 'polygon',
-                    backgroundColor: 'rgba(54, 162, 235, 0.25)',
-                    borderColor: 'rgba(54, 162, 235, 1)',
-                    borderWidth: 2,
-                    radius: 10,
-                    sides: 6,
-                    xValue: selectedDate,
-                    yValue: entryForDate.value.ask,
-                    label: {
-                        content: 'Nearest Ask Date',
-                        enabled: true,
-                        position: 'center'
-                    }
-                });
-            }
-        } else {
-            if (entryForDate?.value?.mid) {
-                annotations.push({
-                    type: 'polygon',
-                    backgroundColor: 'rgba(255, 99, 132, 0.25)',
-                    borderColor: 'rgba(255, 99, 132, 1)',
-                    borderWidth: 2,
-                    radius: 10,
-                    sides: 6,
-                    xValue: selectedDate,
-                    yValue: entryForDate.value.mid,
-                    label: {
-                        content: 'Nearest Date',
-                        enabled: true,
-                        position: 'center'
-                    }
-                });
-            }
-        }
-    }
-
-    const newChart = new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: labels,
-            datasets: datasets
-        },
-        options: {
-            scales: {
-                x: {
-                    type: 'time',
-                    time: {
-                        unit: 'day',
-                        tooltipFormat: 'dd MMM yyyy'
+                datasets = [
+                    {
+                        label: 'Kurs kupna',
+                        data: bidValues,
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                        borderWidth: 1
                     },
-                    min: new Date(startDate).getTime(),
-                    max: new Date(endDate).getTime()
-                },
-                y: {
-                    beginAtZero: false
-                }
-            },
-            plugins: {
-                annotation: {
-                    annotations: annotations
+                    {
+                        label: 'Kurs sprzedaży',
+                        data: askValues,
+                        borderColor: 'rgba(192, 75, 75, 1)',
+                        backgroundColor: 'rgba(192, 75, 75, 0.2)',
+                        borderWidth: 1
+                    }
+                ];
+            } else {
+                const values = data.map(entry => entry.value.mid);
+                datasets = [
+                    {
+                        label: 'Kurs Walut',
+                        data: values,
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                        borderWidth: 1
+                    }
+                ];
+            }
+
+            const ctx = document.getElementById(chartRef).getContext('2d');
+            if (chartRef === 'currencyPlot' && currencyChart) {
+                currencyChart.destroy();
+            } else if (chartRef === 'downloadPlot' && downloadChart) {
+                downloadChart.destroy();
+            }
+
+            const annotations = [];
+            if (chartRef === 'currencyPlot') {
+                const selectedDate = document.getElementById('date').value;
+                const entryForDate = data.find(entry => entry.date === selectedDate);
+
+                if (table === 'C') {
+                    if (entryForDate?.value?.bid) {
+                        annotations.push({
+                            type: 'polygon',
+                            backgroundColor: 'rgba(255, 99, 132, 0.25)',
+                            borderColor: 'rgba(255, 99, 132, 1)',
+                            borderWidth: 2,
+                            radius: 10,
+                            sides: 6,
+                            xValue: selectedDate,
+                            yValue: entryForDate.value.bid,
+                            label: {
+                                content: 'Nearest Bid Date',
+                                enabled: true,
+                                position: 'center'
+                            }
+                        });
+                    }
+
+                    if (entryForDate?.value?.ask) {
+                        annotations.push({
+                            type: 'polygon',
+                            backgroundColor: 'rgba(54, 162, 235, 0.25)',
+                            borderColor: 'rgba(54, 162, 235, 1)',
+                            borderWidth: 2,
+                            radius: 10,
+                            sides: 6,
+                            xValue: selectedDate,
+                            yValue: entryForDate.value.ask,
+                            label: {
+                                content: 'Nearest Ask Date',
+                                enabled: true,
+                                position: 'center'
+                            }
+                        });
+                    }
+                } else {
+                    if (entryForDate?.value?.mid) {
+                        annotations.push({
+                            type: 'polygon',
+                            backgroundColor: 'rgba(255, 99, 132, 0.25)',
+                            borderColor: 'rgba(255, 99, 132, 1)',
+                            borderWidth: 2,
+                            radius: 10,
+                            sides: 6,
+                            xValue: selectedDate,
+                            yValue: entryForDate.value.mid,
+                            label: {
+                                content: 'Nearest Date',
+                                enabled: true,
+                                position: 'center'
+                            }
+                        });
+                    }
                 }
             }
+
+            const newChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: datasets
+                },
+                options: {
+                    scales: {
+                        x: {
+                            type: 'time',
+                            time: {
+                                unit: 'day',
+                                tooltipFormat: 'dd MMM yyyy'
+                            },
+                            min: new Date(startDate).getTime(),
+                            max: new Date(endDate).getTime()
+                        },
+                        y: {
+                            beginAtZero: false
+                        }
+                    },
+                    plugins: {
+                        annotation: {
+                            annotations: annotations
+                        }
+                    }
+                }
+            });
+
+            if (chartRef === 'currencyPlot') {
+                currencyChart = newChart;
+            } else if (chartRef === 'downloadPlot') {
+                downloadChart = newChart;
+            }
         }
-    });
-
-    if (chartRef === 'currencyPlot') {
-        currencyChart = newChart;
-    } else if (chartRef === 'downloadPlot') {
-        downloadChart = newChart;
-    }
-}
-
-
 
         function toggleInfo(table) {
             let infoContent = '';
             if (table === 'A') {
-                infoContent = `<p>Tabela A zawiera wartości 34 najpopularniejszych walut włącznie z polskim złotym, dane aktualizowane są codziennie, zazwyczaj około godziny 16.</p>`;
+                infoContent = `<p data-translate="tableAInfo">Tabela A zawiera wartości 34 najpopularniejszych walut włącznie z polskim złotym, dane aktualizowane są codziennie, zazwyczaj około godziny 16.</p>`;
             } else if (table === 'B') {
-                infoContent = `<p>Tabela B zawiera nieco rzadziej spotykane waluty, dane aktualizowane są raz w tygodniu – w środę pomiędzy godziną 11:45 a 12:15.</p>`;
+                infoContent = `<p data-translate="tableBInfo">Tabela B zawiera nieco rzadziej spotykane waluty, dane aktualizowane są raz w tygodniu – w środę pomiędzy godziną 11:45 a 12:15.</p>`;
             } else if (table === 'C') {
-                infoContent = `<p>Tabela C to archiwum, zawiera zaległe notowania kursów walut zagranicznych, wykorzystywane do statystyk i monitorowania rynku walut.</p>`;
+                infoContent = `<p data-translate="tableCInfo">Tabela C to archiwum, zawiera zaległe notowania kursów walut zagranicznych, wykorzystywane do statystyk i monitorowania rynku walut.</p>`;
             }
             document.getElementById('info-content').innerHTML = infoContent;
+            translateContent();
+        }
+
+        function translateContent() {
+            const translations = {
+                "pl": {
+                    "infoHeader": "Informacje o tabelach kursów NBP",
+                    "tableA": "Tabela A",
+                    "tableB": "Tabela B",
+                    "tableC": "Tabela C",
+                    "checkCurrencyHeader": "Sprawdź kurs walut",
+                    "tableLabel": "Tabela:",
+                    "currencyLabel": "Waluta:",
+                    "dateLabel": "Data:",
+                    "dateRangeLabel": "Zakres dat:",
+                    "oneMonth": "1 miesiąc",
+                    "threeMonths": "3 miesiące",
+                    "oneYear": "1 rok",
+                    "checkButton": "Sprawdź",
+                    "resultHeader": "Wynik Kursu Walut",
+                    "downloadHeader": "Pobierz CSV",
+                    "tableLabelDownload": "Tabela:",
+                    "currencyLabelDownload": "Waluta:",
+                    "dateRangeDownload": "Wybierz zakres dat:",
+                    "downloadButton": "Pobierz CSV",
+                    "infoNBPHeader": "Informacja o kursie NBP",
+                    "infoNBPContent": "Kurs NBP nie nadaje się do śledzenia aktualnej sytuacji na rynku i najnowszych zmian, ponieważ dane aktualizowane są tylko raz dziennie, jednak jest on wykorzystywany do przygotowywania wykresów i analiz długoterminowych oraz sporządzania statystyk. Oprócz tego kursy NBP są wykorzystywane podczas niektórych czynności prawnych wymagających rzetelnych i dokładnych statystyk - przykładem może być choćby określanie wartości zobowiązań cywilnoprawnych, obliczanie różnic kursowych, przeliczanie przychodów bądź kosztów, a także obliczanie wartości aktywów w obcych walutach.",
+                    "tableAInfo": "Tabela A zawiera wartości 34 najpopularniejszych walut włącznie z polskim złotym, dane aktualizowane są codziennie, zazwyczaj około godziny 16.",
+                    "tableBInfo": "Tabela B zawiera nieco rzadziej spotykane waluty, dane aktualizowane są raz w tygodniu – w środę pomiędzy godziną 11:45 a 12:15.",
+                    "tableCInfo": "Tabela C to archiwum, zawiera zaległe notowania kursów walut zagranicznych, wykorzystywane do statystyk i monitorowania rynku walut."
+                },
+                "en": {
+                    "infoHeader": "Information about NBP exchange rate tables",
+                    "tableA": "Table A",
+                    "tableB": "Table B",
+                    "tableC": "Table C",
+                    "checkCurrencyHeader": "Check currency rates",
+                    "tableLabel": "Table:",
+                    "currencyLabel": "Currency:",
+                    "dateLabel": "Date:",
+                    "dateRangeLabel": "Date range:",
+                    "oneMonth": "1 month",
+                    "threeMonths": "3 months",
+                    "oneYear": "1 year",
+                    "checkButton": "Check",
+                    "resultHeader": "Currency Rate Result",
+                    "downloadHeader": "Download CSV",
+                    "tableLabelDownload": "Table:",
+                    "currencyLabelDownload": "Currency:",
+                    "dateRangeDownload": "Select date range:",
+                    "downloadButton": "Download CSV",
+                    "infoNBPHeader": "Information about NBP rate",
+                    "infoNBPContent": "The NBP rate is not suitable for tracking the current market situation and the latest changes, because the data is updated only once a day, but it is used to prepare charts and long-term analyzes and compile statistics. In addition, NBP rates are used during some legal activities that require reliable and accurate statistics - an example can be determining the value of civil law obligations, calculating exchange rate differences, converting revenues or costs, and calculating the value of assets in foreign currencies.",
+                    "tableAInfo": "Table A contains the values of the 34 most popular currencies, including the Polish zloty, data is updated daily, usually around 4 pm.",
+                    "tableBInfo": "Table B contains less frequently encountered currencies, data is updated once a week - on Wednesday between 11:45 am and 12:15 pm.",
+                    "tableCInfo": "Table C is an archive, containing past quotations of foreign exchange rates, used for statistics and monitoring the currency market."
+                }
+            };
+
+            const language = document.documentElement.lang;
+            document.querySelectorAll('[data-translate]').forEach(element => {
+                const key = element.getAttribute('data-translate');
+                if (translations[language] && translations[language][key]) {
+                    element.innerText = translations[language][key];
+                }
+            });
         }
 
         $(document).ready(function() {
@@ -625,13 +743,23 @@
             fetchDateRanges(defaultTable, defaultCurrency, 'currency').then(() => {
                 const { startDate, endDate } = getDateRangeValues('currency');
                 fetchPlotData(defaultTable, defaultCurrency, startDate, endDate, 'currencyPlot');
-                
             });
 
             fetchDateRanges(defaultTable, defaultCurrency, 'download').then(() => {
                 const dateRange = dateRanges[defaultTable];
                 fetchPlotData(defaultTable, defaultCurrency, dateRange.min, dateRange.max, 'downloadPlot');
             });
+
+            $('#lang-pl').on('click', function() {
+                document.documentElement.lang = 'pl';
+                translateContent();
+            });
+
+            $('#lang-en').on('click', function() {
+                document.documentElement.lang = 'en';
+                translateContent();
+            });
+
         });
     </script>
 </body>

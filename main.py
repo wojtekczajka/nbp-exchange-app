@@ -5,6 +5,7 @@ from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 from typing import Dict
 from datetime import datetime
+
 from database import SessionLocal
 from crud import get_distinct_currencies, get_date_range, get_currency_rate, get_available_dates, get_plot_data, get_nearest_currency_rate
 from io import StringIO
@@ -13,12 +14,14 @@ app = FastAPI()
 
 templates = Jinja2Templates(directory="templates")
 
+
 def get_db():
     db = SessionLocal()
     try:
         yield db
     finally:
         db.close()
+
 
 @app.get("/", response_class=HTMLResponse)
 async def read_root(request: Request, db: Session = Depends(get_db)):
@@ -30,9 +33,12 @@ async def read_root(request: Request, db: Session = Depends(get_db)):
     date_range_b = get_date_range(db, 'B')
     date_range_c = get_date_range(db, 'C')
 
-    currencies_list_a = [{"code": currency, "name": currency} for currency, in currencies_a]
-    currencies_list_b = [{"code": currency, "name": currency} for currency, in currencies_b]
-    currencies_list_c = [{"code": currency, "name": currency} for currency, in currencies_c]
+    currencies_list_a = [{"code": currency, "name": currency}
+                         for currency, in currencies_a]
+    currencies_list_b = [{"code": currency, "name": currency}
+                         for currency, in currencies_b]
+    currencies_list_c = [{"code": currency, "name": currency}
+                         for currency, in currencies_c]
 
     return templates.TemplateResponse("index.html", {
         "request": request,
@@ -44,6 +50,7 @@ async def read_root(request: Request, db: Session = Depends(get_db)):
         "date_range_c": {"min": date_range_c[0], "max": date_range_c[1]}
     })
 
+
 @app.get("/date-ranges/{table}/{currency}", response_model=Dict[str, str])
 async def get_date_ranges(table: str, currency: str, db: Session = Depends(get_db)):
     date_range = get_date_range(db, table, currency)
@@ -53,12 +60,15 @@ async def get_date_ranges(table: str, currency: str, db: Session = Depends(get_d
             "max": date_range[1].isoformat()
         }
     else:
-        raise HTTPException(status_code=404, detail="Invalid table or currency specified")
+        raise HTTPException(
+            status_code=404, detail="Invalid table or currency specified")
+
 
 @app.get("/available-dates/{table}/{year}/{month}/{currency}")
 async def get_available_dates_endpoint(table: str, year: int, month: int, currency: str, db: Session = Depends(get_db)):
     dates = get_available_dates(db, table, year, month, currency)
     return [date[0] for date in dates]
+
 
 @app.get("/check-currency/{table}/{currency}")
 async def check_currency(table: str, currency: str, date: str, db: Session = Depends(get_db)):
@@ -72,6 +82,7 @@ async def check_currency(table: str, currency: str, date: str, db: Session = Dep
     else:
         raise HTTPException(status_code=404, detail="Not found")
 
+
 @app.get("/check-currency-range/{table}/{currency}")
 async def check_currency_range(table: str, currency: str, start_date: str, end_date: str, db: Session = Depends(get_db)):
     start_date_obj = datetime.strptime(start_date, "%Y-%m-%d").date()
@@ -81,7 +92,8 @@ async def check_currency_range(table: str, currency: str, start_date: str, end_d
         return [{"date": str(record[0]), "value": {"mid": record[1]}} for record in data]
     elif table == 'C':
         return [{"date": str(record[0]), "value": {"bid": record[1], "ask": record[2]}} for record in data]
-    
+
+
 @app.get("/nearest-currency/{table}/{currency}")
 async def get_nearest_currency(table: str, currency: str, date: str, db: Session = Depends(get_db)):
     date_obj = datetime.strptime(date, "%Y-%m-%d").date()
@@ -94,16 +106,17 @@ async def get_nearest_currency(table: str, currency: str, date: str, db: Session
     else:
         raise HTTPException(status_code=404, detail="Not found")
 
+
 @app.get("/download-csv/{table}/{currency}")
 async def download_csv(table: str, currency: str, start_date: str, end_date: str, db: Session = Depends(get_db)):
     start_date_obj = datetime.strptime(start_date, "%Y-%m-%d").date()
     end_date_obj = datetime.strptime(end_date, "%Y-%m-%d").date()
     data = get_plot_data(db, table, currency, start_date_obj, end_date_obj)
-    
+
     output = StringIO()
     writer = csv.writer(output)
     writer.writerow(['Date', 'Value'])
-    
+
     if table in ['A', 'B']:
         for record in data:
             writer.writerow([record[0], record[1]])
@@ -111,7 +124,7 @@ async def download_csv(table: str, currency: str, start_date: str, end_date: str
         writer.writerow(['Date', 'Bid', 'Ask'])
         for record in data:
             writer.writerow([record[0], record[1], record[2]])
-    
+
     output.seek(0)
-    
+
     return StreamingResponse(output, media_type='text/csv', headers={"Content-Disposition": f"attachment; filename={currency}_{table}_{start_date}_to_{end_date}.csv"})
