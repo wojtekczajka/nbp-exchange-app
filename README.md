@@ -2,6 +2,7 @@
 # NBP Exchange Rates App
 
 This application fetches and displays exchange rates from the National Bank of Poland (NBP). It also allows users to check historical rates, view trends, and download data as CSV.
+app: https://seashell-app-e3qoh.ondigitalocean.app/
 
 ## Features
 
